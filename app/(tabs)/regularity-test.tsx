@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function TapTestScreen() {
+export default function RegularityTestScreen() {
   const [testStarted, setTestStarted] = useState(false);
   const [testCompleted, setTestCompleted] = useState(false);
   const [tapCount, setTapCount] = useState(0);
@@ -12,6 +13,34 @@ export default function TapTestScreen() {
     stdDevInterval: 0,
     accuracy: 0,
   });
+
+  const saveResultsToStorage = async (resultData: typeof results) => {
+    try {
+      const existingResultsJson = await AsyncStorage.getItem(
+        "regularityTestResults"
+      );
+      let allResults = [];
+
+      if (existingResultsJson) {
+        allResults = JSON.parse(existingResultsJson);
+      }
+
+      const newResult = {
+        ...resultData,
+        date: new Date().toISOString(),
+      };
+
+      allResults.push(newResult);
+
+      await AsyncStorage.setItem(
+        "regularityTestResults",
+        JSON.stringify(allResults)
+      );
+      console.log("Results saved successfully");
+    } catch (error) {
+      console.error("Error saving results:", error);
+    }
+  };
 
   const recordTap = () => {
     if (testCompleted) return;
@@ -59,11 +88,15 @@ export default function TapTestScreen() {
       100 - (100 * Math.abs(avgInterval - targetInterval)) / targetInterval;
     accuracy = Math.max(0, Math.min(100, accuracy));
 
-    setResults({
+    const resultData = {
       avgInterval,
       stdDevInterval,
       accuracy,
-    });
+    };
+
+    setResults(resultData);
+
+    saveResultsToStorage(resultData);
   };
 
   const resetTest = () => {
