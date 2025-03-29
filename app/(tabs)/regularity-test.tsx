@@ -193,7 +193,6 @@ export function ResultRow({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#121212",
     padding: 30,
     paddingTop: 50,
   },
