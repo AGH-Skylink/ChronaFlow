@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
   TouchableOpacity,
   View,
@@ -7,13 +7,10 @@ import {
   Animated,
   Modal,
   TouchableWithoutFeedback,
-  Alert,
-  Dimensions,
 } from "react-native";
 import { useColorScheme } from "./useColorScheme";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { EventRegister } from "react-native-event-listeners";
+import { clearAllResults, exportResults } from "@/app/pages/regularity-results";
 
 export function ExtraOptionsMenu() {
   const colorScheme = useColorScheme();
@@ -44,44 +41,13 @@ export function ExtraOptionsMenu() {
   };
 
   const handleExportPress = () => {
-    console.log("Export option pressed");
     toggleMenu();
+    exportResults();
   };
 
   const handleClearPress = () => {
-    Alert.alert(
-      "Clear All Results",
-      "Are you sure you want to delete all test results? This action cannot be undone.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await AsyncStorage.removeItem("regularityTestResults");
-              console.log("All results cleared");
-
-              EventRegister.emit("resultsCleared", true);
-
-              Alert.alert("Success", "All results have been cleared.", [
-                { text: "OK" },
-              ]);
-            } catch (error) {
-              console.error("Error clearing results:", error);
-              Alert.alert(
-                "Error",
-                "Failed to clear results. Please try again."
-              );
-            }
-            toggleMenu();
-          },
-        },
-      ]
-    );
+    toggleMenu();
+    clearAllResults();
   };
 
   return (

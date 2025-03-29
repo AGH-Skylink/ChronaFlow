@@ -6,17 +6,101 @@ import {
   Text,
   TouchableOpacity,
   Alert,
+  Share,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { EventRegister } from "react-native-event-listeners";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 
 type TestResult = {
   avgInterval: number;
   stdDevInterval: number;
   accuracy: number;
   date: string;
+};
+
+export const exportResults = async () => {
+  try {
+    const resultsJson = await AsyncStorage.getItem("regularityTestResults");
+
+    if (resultsJson) {
+      const parsedResults = JSON.parse(resultsJson);
+
+      let csvContent =
+        "Date,Average Interval (ms),Standard Deviation (ms),Accuracy (%)\n";
+
+      parsedResults.forEach((result: TestResult) => {
+        const date = new Date(result.date).toLocaleString();
+        const avgInterval = result.avgInterval.toFixed(2);
+        const stdDev = result.stdDevInterval.toFixed(2);
+        const accuracy = result.accuracy.toFixed(1);
+
+        csvContent += `${date},${avgInterval},${stdDev},${accuracy}\n`;
+      });
+
+      const fileDate = new Date().toISOString().replace(/[:.]/g, "-");
+      const fileName = `regularity_test_results_${fileDate}.csv`;
+      const filePath = `${FileSystem.documentDirectory}${fileName}`;
+
+      await FileSystem.writeAsStringAsync(filePath, csvContent);
+
+      const isSharingAvailable = await Sharing.isAvailableAsync();
+
+      if (isSharingAvailable) {
+        await Sharing.shareAsync(filePath, {
+          mimeType: "text/csv",
+          dialogTitle: "Save Regularity Test Results",
+          UTI: "public.comma-separated-values-text",
+        });
+
+        console.log(`File exported: ${filePath}`);
+      } else {
+        Alert.alert("Export Complete", `Results exported to: ${filePath}`, [
+          { text: "OK" },
+        ]);
+      }
+    } else {
+      Alert.alert("No results found", "There are no test results to export.");
+    }
+  } catch (error) {
+    console.error("Error exporting results:", error);
+    Alert.alert("Error", "Failed to export results. Please try again.");
+  }
+};
+
+export const clearAllResults = () => {
+  Alert.alert(
+    "Clear All Results",
+    "Are you sure you want to delete all test results? This action cannot be undone.",
+    [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await AsyncStorage.removeItem("regularityTestResults");
+            console.log("All results cleared");
+
+            EventRegister.emit("resultsCleared", true);
+
+            Alert.alert("Success", "All results have been cleared.", [
+              { text: "OK" },
+            ]);
+          } catch (error) {
+            console.error("Error clearing results:", error);
+            Alert.alert("Error", "Failed to clear results. Please try again.");
+          }
+        },
+      },
+    ]
+  );
 };
 
 export default function RegularityResultsScreen() {
