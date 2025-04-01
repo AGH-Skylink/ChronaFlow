@@ -10,7 +10,15 @@ import {
 } from "react-native";
 import { useColorScheme } from "./useColorScheme";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { clearAllResults, exportResults } from "@/app/pages/regularity-results";
+import {
+  clearAllResults as clearRegularityResults,
+  exportResults as exportRegularityResults,
+} from "@/app/pages/regularity-results";
+import {
+  clearAllResults as clearActiveResults,
+  exportResults as exportActiveResults,
+} from "@/app/pages/active-results";
+import { usePathname } from "expo-router";
 
 export function ExtraOptionsMenu() {
   const colorScheme = useColorScheme();
@@ -22,6 +30,9 @@ export function ExtraOptionsMenu() {
     height: 0,
   });
   const scaleAnim = useRef(new Animated.Value(0)).current;
+  const pathname = usePathname();
+
+  const isActiveResults = pathname?.includes("active-results");
 
   const toggleMenu = () => {
     if (isMenuVisible) {
@@ -42,12 +53,20 @@ export function ExtraOptionsMenu() {
 
   const handleExportPress = () => {
     toggleMenu();
-    exportResults();
+    if (isActiveResults) {
+      exportActiveResults();
+    } else {
+      exportRegularityResults();
+    }
   };
 
   const handleClearPress = () => {
     toggleMenu();
-    clearAllResults();
+    if (isActiveResults) {
+      clearActiveResults();
+    } else {
+      clearRegularityResults();
+    }
   };
 
   return (
