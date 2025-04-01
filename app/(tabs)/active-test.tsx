@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ResultRow } from "../../components/TestResultComponents";
 
 // Array of space-related emojis
 const spaceEmojis = [
@@ -178,15 +179,6 @@ export default function ActiveTest() {
         )}
       </View>
       <StatusBar style="light" />
-    </View>
-  );
-}
-
-function ResultRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.resultRow}>
-      <Text style={styles.resultLabel}>{label}</Text>
-      <Text style={styles.resultValue}>{value}</Text>
     </View>
   );
 }
