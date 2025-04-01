@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { EventRegister } from "react-native-event-listeners";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 type TestResult = {
   avgInterval: number;
@@ -144,6 +145,53 @@ export default function RegularityResultsScreen() {
     }
   };
 
+  const deleteResult = (dateToDelete: string) => {
+    Alert.alert(
+      "Delete Result",
+      "Are you sure you want to delete this result?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const resultsJson = await AsyncStorage.getItem(
+                "regularityTestResults"
+              );
+
+              if (resultsJson) {
+                const parsedResults = JSON.parse(resultsJson);
+                const updatedResults = parsedResults.filter(
+                  (result: TestResult) => result.date !== dateToDelete
+                );
+
+                // Save updated results
+                await AsyncStorage.setItem(
+                  "regularityTestResults",
+                  JSON.stringify(updatedResults)
+                );
+
+                setResults(updatedResults);
+
+                console.log("Result deleted successfully");
+              }
+            } catch (error) {
+              console.error("Error deleting result:", error);
+              Alert.alert(
+                "Error",
+                "Failed to delete result. Please try again."
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -200,6 +248,16 @@ export default function RegularityResultsScreen() {
                 <Text style={styles.resultValue}>
                   {result.stdDevInterval.toFixed(2)} ms
                 </Text>
+              </View>
+
+              <View style={styles.deleteButtonContainer}>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => deleteResult(result.date)}
+                >
+                  <FontAwesome name="trash" size={18} color="#f87171" />
+                  <Text style={styles.deleteButtonText}>Delete</Text>
+                </TouchableOpacity>
               </View>
             </View>
           ))}
@@ -286,6 +344,10 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#e0e0e0",
   },
+  headerRightContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   accuracyBadge: {
     backgroundColor: "#1e40af",
     borderRadius: 20,
@@ -296,6 +358,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: "#e0e0e0",
+  },
+  deleteButtonContainer: {
+    marginTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#2d3748",
+    paddingTop: 12,
+    alignItems: "flex-end",
+  },
+  deleteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 8,
+  },
+  deleteButtonText: {
+    color: "#f87171",
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: "500",
   },
   resultRow: {
     flexDirection: "row",

@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { EventRegister } from "react-native-event-listeners";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 type TestResult = {
   id: string;
@@ -158,12 +159,59 @@ export default function ActiveResultsScreen() {
     }
   };
 
-  // Function to determine the background color for the accuracy badge
   const getAccuracyBadgeColor = (accuracy: number) => {
     if (accuracy >= 90) return "#15803d"; // Green for high accuracy
     if (accuracy >= 70) return "#1e40af"; // Blue for good accuracy
     if (accuracy >= 50) return "#a16207"; // Amber for moderate accuracy
     return "#b91c1c"; // Red for low accuracy
+  };
+
+  const deleteResult = (idToDelete: string) => {
+    Alert.alert(
+      "Delete Result",
+      "Are you sure you want to delete this result?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // Get current results
+              const resultsJson = await AsyncStorage.getItem("activeTest");
+
+              if (resultsJson) {
+                const parsedResults = JSON.parse(resultsJson);
+                // Filter out the result to delete
+                const updatedResults = parsedResults.filter(
+                  (result: TestResult) => result.id !== idToDelete
+                );
+
+                // Save updated results
+                await AsyncStorage.setItem(
+                  "activeTest",
+                  JSON.stringify(updatedResults)
+                );
+
+                // Update UI
+                setResults(updatedResults);
+
+                console.log("Result deleted successfully");
+              }
+            } catch (error) {
+              console.error("Error deleting result:", error);
+              Alert.alert(
+                "Error",
+                "Failed to delete result. Please try again."
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -202,7 +250,9 @@ export default function ActiveResultsScreen() {
                 <View
                   style={[
                     styles.accuracyBadge,
-                    { backgroundColor: getAccuracyBadgeColor(result.accuracy) },
+                    {
+                      backgroundColor: getAccuracyBadgeColor(result.accuracy),
+                    },
                   ]}
                 >
                   <Text style={styles.accuracyText}>
@@ -228,6 +278,16 @@ export default function ActiveResultsScreen() {
                 <Text style={styles.resultValue}>
                   {Math.abs(result.userDuration - result.targetDuration)} ms
                 </Text>
+              </View>
+
+              <View style={styles.deleteButtonContainer}>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => deleteResult(result.id)}
+                >
+                  <FontAwesome name="trash" size={18} color="#f87171" />
+                  <Text style={styles.deleteButtonText}>Delete</Text>
+                </TouchableOpacity>
               </View>
             </View>
           ))}
@@ -345,5 +405,27 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
     color: "#e0e0e0",
+  },
+  headerRightContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  deleteButtonContainer: {
+    marginTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#2d3748",
+    paddingTop: 12,
+    alignItems: "flex-end",
+  },
+  deleteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 8,
+  },
+  deleteButtonText: {
+    color: "#f87171",
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: "500",
   },
 });
