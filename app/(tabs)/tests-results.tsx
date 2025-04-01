@@ -29,11 +29,12 @@ export default function TestsResultsScreen() {
           onPress={() => router.push("/pages/regularity-results")}
         />
 
-        <View style={styles.comingSoonContainer}>
-          <Text style={styles.comingSoon}>
-            More test results will appear here as you try new tests
-          </Text>
-        </View>
+        <TestCard
+          title="Active Exposure Test Results"
+          description="View your history of reaction time tests"
+          icon="eye"
+          onPress={() => router.push("/pages/active-results")}
+        />
       </ScrollView>
       <StatusBar style="light" />
     </View>
