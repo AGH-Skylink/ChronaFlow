@@ -1,0 +1,76 @@
+import React from "react";
+import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+
+type TestCardProps = {
+  title: string;
+  description: string;
+  icon: React.ComponentProps<typeof FontAwesome>["name"];
+  onPress: () => void;
+};
+
+export function TestCard({ title, description, icon, onPress }: TestCardProps) {
+  return (
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+      <View style={styles.iconContainer}>
+        <FontAwesome name={icon} size={24} color="#60a5fa" />
+      </View>
+      <View style={styles.cardContent}>
+        <Text style={styles.cardTitle}>{title}</Text>
+        <Text style={styles.cardDescription}>{description}</Text>
+      </View>
+      <FontAwesome
+        name="chevron-right"
+        size={16}
+        color="#6b7280"
+        style={styles.cardArrow}
+      />
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1f2937",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#2d3748",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 16,
+  },
+  cardContent: {
+    flex: 1,
+    backgroundColor: "transparent",
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 4,
+    color: "#e0e0e0",
+  },
+  cardDescription: {
+    fontSize: 14,
+    color: "#a0aec0",
+    lineHeight: 20,
+  },
+  cardArrow: {
+    marginLeft: 8,
+  },
+});
