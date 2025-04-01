@@ -6,15 +6,22 @@ import {
   Text,
   TouchableOpacity,
   Alert,
-  Share,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { EventRegister } from "react-native-event-listeners";
-import * as FileSystem from "expo-file-system";
-import * as Sharing from "expo-sharing";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import {
+  exportResults,
+  clearAllResults,
+  formatDate,
+} from "../../utils/test-results-utils";
+import {
+  LoadingState,
+  EmptyState,
+  DeleteButton,
+  ResultRow,
+} from "../../components/TestResultComponents";
 
 type TestResult = {
   avgInterval: number;
@@ -23,85 +30,30 @@ type TestResult = {
   date: string;
 };
 
-export const exportResults = async () => {
-  try {
-    const resultsJson = await AsyncStorage.getItem("regularityTestResults");
+// Storage key and event name constants
+const STORAGE_KEY = "regularityTestResults";
+const RESULTS_CLEARED_EVENT = "resultsCleared";
 
-    if (resultsJson) {
-      const parsedResults = JSON.parse(resultsJson);
-
-      let csvContent =
-        "Date,Average Interval (ms),Standard Deviation (ms),Accuracy (%)\n";
-
-      parsedResults.forEach((result: TestResult) => {
-        const date = new Date(result.date).toLocaleString();
-        const avgInterval = result.avgInterval.toFixed(2);
-        const stdDev = result.stdDevInterval.toFixed(2);
-        const accuracy = result.accuracy.toFixed(1);
-
-        csvContent += `${date},${avgInterval},${stdDev},${accuracy}\n`;
-      });
-
-      const fileDate = new Date().toISOString().replace(/[:.]/g, "-");
-      const fileName = `regularity_test_results_${fileDate}.csv`;
-      const filePath = `${FileSystem.documentDirectory}${fileName}`;
-
-      await FileSystem.writeAsStringAsync(filePath, csvContent);
-
-      const isSharingAvailable = await Sharing.isAvailableAsync();
-
-      if (isSharingAvailable) {
-        await Sharing.shareAsync(filePath, {
-          mimeType: "text/csv",
-          dialogTitle: "Save Regularity Test Results",
-          UTI: "public.comma-separated-values-text",
-        });
-
-        console.log(`File exported: ${filePath}`);
-      } else {
-        Alert.alert("Export Complete", `Results exported to: ${filePath}`, [
-          { text: "OK" },
-        ]);
-      }
-    } else {
-      Alert.alert("No results found", "There are no test results to export.");
-    }
-  } catch (error) {
-    console.error("Error exporting results:", error);
-    Alert.alert("Error", "Failed to export results. Please try again.");
-  }
+export const exportRegularityResults = async () => {
+  await exportResults({
+    storageKey: STORAGE_KEY,
+    csvHeader:
+      "Date,Average Interval (ms),Standard Deviation (ms),Accuracy (%)\n",
+    formatRow: (result: TestResult) => {
+      const date = new Date(result.date).toLocaleString();
+      const avgInterval = result.avgInterval.toFixed(2);
+      const stdDev = result.stdDevInterval.toFixed(2);
+      const accuracy = result.accuracy.toFixed(1);
+      return `${date},${avgInterval},${stdDev},${accuracy}\n`;
+    },
+    fileNamePrefix: "regularity_test_results",
+    dialogTitle: "Save Regularity Test Results",
+    eventName: RESULTS_CLEARED_EVENT,
+  });
 };
 
-export const clearAllResults = () => {
-  Alert.alert(
-    "Clear All Results",
-    "Are you sure you want to delete all test results? This action cannot be undone.",
-    [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await AsyncStorage.removeItem("regularityTestResults");
-            console.log("All results cleared");
-
-            EventRegister.emit("resultsCleared", true);
-
-            Alert.alert("Success", "All results have been cleared.", [
-              { text: "OK" },
-            ]);
-          } catch (error) {
-            console.error("Error clearing results:", error);
-            Alert.alert("Error", "Failed to clear results. Please try again.");
-          }
-        },
-      },
-    ]
-  );
+export const clearRegularityResults = () => {
+  clearAllResults(STORAGE_KEY, RESULTS_CLEARED_EVENT);
 };
 
 export default function RegularityResultsScreen() {
@@ -113,10 +65,13 @@ export default function RegularityResultsScreen() {
     loadResults();
 
     // Register event listener for results cleared
-    const listener = EventRegister.addEventListener("resultsCleared", () => {
-      // When results are cleared, update the UI by setting empty results
-      setResults([]);
-    });
+    const listener = EventRegister.addEventListener(
+      RESULTS_CLEARED_EVENT,
+      () => {
+        // When results are cleared, update the UI by setting empty results
+        setResults([]);
+      }
+    );
 
     // Clean up listener when component unmounts
     return () => {
@@ -127,7 +82,7 @@ export default function RegularityResultsScreen() {
   const loadResults = async () => {
     try {
       setLoading(true);
-      const resultsJson = await AsyncStorage.getItem("regularityTestResults");
+      const resultsJson = await AsyncStorage.getItem(STORAGE_KEY);
 
       if (resultsJson) {
         const parsedResults = JSON.parse(resultsJson);
@@ -159,9 +114,7 @@ export default function RegularityResultsScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              const resultsJson = await AsyncStorage.getItem(
-                "regularityTestResults"
-              );
+              const resultsJson = await AsyncStorage.getItem(STORAGE_KEY);
 
               if (resultsJson) {
                 const parsedResults = JSON.parse(resultsJson);
@@ -171,12 +124,11 @@ export default function RegularityResultsScreen() {
 
                 // Save updated results
                 await AsyncStorage.setItem(
-                  "regularityTestResults",
+                  STORAGE_KEY,
                   JSON.stringify(updatedResults)
                 );
 
                 setResults(updatedResults);
-
                 console.log("Result deleted successfully");
               }
             } catch (error) {
@@ -192,34 +144,16 @@ export default function RegularityResultsScreen() {
     );
   };
 
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleString();
-    } catch (e) {
-      return "Invalid date";
-    }
-  };
-
   return (
     <View style={styles.container}>
       {loading ? (
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading results...</Text>
-        </View>
+        <LoadingState />
       ) : results.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No test results found</Text>
-          <Text style={styles.emptySubtext}>
-            Complete the regularity test to see your results here
-          </Text>
-          <TouchableOpacity
-            style={styles.takeTestButton}
-            onPress={() => router.push("/regularity-test")}
-          >
-            <Text style={styles.takeTestButtonText}>Take Test Now</Text>
-          </TouchableOpacity>
-        </View>
+        <EmptyState
+          testName="regularity test"
+          routePath="/regularity-test"
+          onTakeTest={() => router.push("/regularity-test")}
+        />
       ) : (
         <ScrollView
           style={styles.scrollView}
@@ -236,29 +170,17 @@ export default function RegularityResultsScreen() {
                 </View>
               </View>
 
-              <View style={styles.resultRow}>
-                <Text style={styles.resultLabel}>Average interval:</Text>
-                <Text style={styles.resultValue}>
-                  {result.avgInterval.toFixed(2)} ms
-                </Text>
-              </View>
+              <ResultRow
+                label="Average interval:"
+                value={`${result.avgInterval.toFixed(2)} ms`}
+              />
 
-              <View style={styles.resultRow}>
-                <Text style={styles.resultLabel}>Standard deviation:</Text>
-                <Text style={styles.resultValue}>
-                  {result.stdDevInterval.toFixed(2)} ms
-                </Text>
-              </View>
+              <ResultRow
+                label="Standard deviation:"
+                value={`${result.stdDevInterval.toFixed(2)} ms`}
+              />
 
-              <View style={styles.deleteButtonContainer}>
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => deleteResult(result.date)}
-                >
-                  <FontAwesome name="trash" size={18} color="#f87171" />
-                  <Text style={styles.deleteButtonText}>Delete</Text>
-                </TouchableOpacity>
-              </View>
+              <DeleteButton onPress={() => deleteResult(result.date)} />
             </View>
           ))}
         </ScrollView>
@@ -277,44 +199,6 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     padding: 16,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    fontSize: 18,
-    color: "#a0aec0",
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  emptyText: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#e0e0e0",
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 16,
-    color: "#a0aec0",
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  takeTestButton: {
-    backgroundColor: "#3b82f6",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  takeTestButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
   },
   resultCard: {
     backgroundColor: "#1f2937",
@@ -356,38 +240,6 @@ const styles = StyleSheet.create({
   },
   accuracyText: {
     fontSize: 14,
-    fontWeight: "600",
-    color: "#e0e0e0",
-  },
-  deleteButtonContainer: {
-    marginTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#2d3748",
-    paddingTop: 12,
-    alignItems: "flex-end",
-  },
-  deleteButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 8,
-  },
-  deleteButtonText: {
-    color: "#f87171",
-    marginLeft: 6,
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  resultRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 8,
-  },
-  resultLabel: {
-    fontSize: 15,
-    color: "#a0aec0",
-  },
-  resultValue: {
-    fontSize: 15,
     fontWeight: "600",
     color: "#e0e0e0",
   },

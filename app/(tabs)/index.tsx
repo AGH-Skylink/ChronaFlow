@@ -50,10 +50,6 @@ export default function HomeScreen() {
             icon="eye"
             onPress={() => router.push("/active-test")}
           />
-
-          <View style={styles.comingSoonContainer}>
-            <Text style={styles.comingSoon}>More tests coming soon</Text>
-          </View>
         </View>
       </ScrollView>
     </View>

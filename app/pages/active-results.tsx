@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from "react";
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  TouchableOpacity,
-  Alert,
-  Share,
-} from "react-native";
+import { StyleSheet, ScrollView, View, Text, Alert } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { EventRegister } from "react-native-event-listeners";
-import * as FileSystem from "expo-file-system";
-import * as Sharing from "expo-sharing";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import {
+  exportResults,
+  clearAllResults,
+  formatDate,
+} from "../../utils/test-results-utils";
+import {
+  LoadingState,
+  EmptyState,
+  DeleteButton,
+  ResultRow,
+} from "../../components/TestResultComponents";
 
 type TestResult = {
   id: string;
@@ -25,86 +25,27 @@ type TestResult = {
   emoji: string;
 };
 
-export const exportResults = async () => {
-  try {
-    const resultsJson = await AsyncStorage.getItem("activeTest");
+// Storage key and event name constants
+const STORAGE_KEY = "activeTest";
+const RESULTS_CLEARED_EVENT = "activeResultsCleared";
 
-    if (resultsJson) {
-      const parsedResults = JSON.parse(resultsJson);
-
-      let csvContent =
-        "Date,Emoji,Target Duration (ms),Your Duration (ms),Accuracy (%)\n";
-
-      parsedResults.forEach((result: TestResult) => {
-        const date = new Date(result.timestamp).toLocaleString();
-        const targetDuration = result.targetDuration;
-        const userDuration = result.userDuration;
-        const accuracy = result.accuracy;
-        const emoji = result.emoji;
-
-        csvContent += `"${date}","${emoji}",${targetDuration},${userDuration},${accuracy}\n`;
-      });
-
-      const fileDate = new Date().toISOString().replace(/[:.]/g, "-");
-      const fileName = `active_test_results_${fileDate}.csv`;
-      const filePath = `${FileSystem.documentDirectory}${fileName}`;
-
-      await FileSystem.writeAsStringAsync(filePath, csvContent);
-
-      const isSharingAvailable = await Sharing.isAvailableAsync();
-
-      if (isSharingAvailable) {
-        await Sharing.shareAsync(filePath, {
-          mimeType: "text/csv",
-          dialogTitle: "Save Active Test Results",
-          UTI: "public.comma-separated-values-text",
-        });
-
-        console.log(`File exported: ${filePath}`);
-      } else {
-        Alert.alert("Export Complete", `Results exported to: ${filePath}`, [
-          { text: "OK" },
-        ]);
-      }
-    } else {
-      Alert.alert("No results found", "There are no test results to export.");
-    }
-  } catch (error) {
-    console.error("Error exporting results:", error);
-    Alert.alert("Error", "Failed to export results. Please try again.");
-  }
+export const exportActiveResults = async () => {
+  await exportResults({
+    storageKey: STORAGE_KEY,
+    csvHeader:
+      "Date,Emoji,Target Duration (ms),Your Duration (ms),Accuracy (%)\n",
+    formatRow: (result: TestResult) => {
+      const date = new Date(result.timestamp).toLocaleString();
+      return `"${date}","${result.emoji}",${result.targetDuration},${result.userDuration},${result.accuracy}\n`;
+    },
+    fileNamePrefix: "active_test_results",
+    dialogTitle: "Save Active Test Results",
+    eventName: RESULTS_CLEARED_EVENT,
+  });
 };
 
-export const clearAllResults = () => {
-  Alert.alert(
-    "Clear All Results",
-    "Are you sure you want to delete all test results? This action cannot be undone.",
-    [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await AsyncStorage.removeItem("activeTest");
-            console.log("All results cleared");
-
-            EventRegister.emit("activeResultsCleared", true);
-
-            Alert.alert("Success", "All results have been cleared.", [
-              { text: "OK" },
-            ]);
-          } catch (error) {
-            console.error("Error clearing results:", error);
-            Alert.alert("Error", "Failed to clear results. Please try again.");
-          }
-        },
-      },
-    ]
-  );
+export const clearActiveResults = () => {
+  clearAllResults(STORAGE_KEY, RESULTS_CLEARED_EVENT);
 };
 
 export default function ActiveResultsScreen() {
@@ -117,7 +58,7 @@ export default function ActiveResultsScreen() {
 
     // Register event listener for results cleared
     const listener = EventRegister.addEventListener(
-      "activeResultsCleared",
+      RESULTS_CLEARED_EVENT,
       () => {
         // When results are cleared, update the UI by setting empty results
         setResults([]);
@@ -133,7 +74,7 @@ export default function ActiveResultsScreen() {
   const loadResults = async () => {
     try {
       setLoading(true);
-      const resultsJson = await AsyncStorage.getItem("activeTest");
+      const resultsJson = await AsyncStorage.getItem(STORAGE_KEY);
 
       if (resultsJson) {
         const parsedResults = JSON.parse(resultsJson);
@@ -147,15 +88,6 @@ export default function ActiveResultsScreen() {
       console.error("Error loading results:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const formatDate = (timestamp: number) => {
-    try {
-      const date = new Date(timestamp);
-      return date.toLocaleString();
-    } catch (e) {
-      return "Invalid date";
     }
   };
 
@@ -180,25 +112,20 @@ export default function ActiveResultsScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              // Get current results
-              const resultsJson = await AsyncStorage.getItem("activeTest");
+              const resultsJson = await AsyncStorage.getItem(STORAGE_KEY);
 
               if (resultsJson) {
                 const parsedResults = JSON.parse(resultsJson);
-                // Filter out the result to delete
                 const updatedResults = parsedResults.filter(
                   (result: TestResult) => result.id !== idToDelete
                 );
 
-                // Save updated results
                 await AsyncStorage.setItem(
-                  "activeTest",
+                  STORAGE_KEY,
                   JSON.stringify(updatedResults)
                 );
 
-                // Update UI
                 setResults(updatedResults);
-
                 console.log("Result deleted successfully");
               }
             } catch (error) {
@@ -217,22 +144,13 @@ export default function ActiveResultsScreen() {
   return (
     <View style={styles.container}>
       {loading ? (
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading results...</Text>
-        </View>
+        <LoadingState />
       ) : results.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No test results found</Text>
-          <Text style={styles.emptySubtext}>
-            Complete the active test to see your results here
-          </Text>
-          <TouchableOpacity
-            style={styles.takeTestButton}
-            onPress={() => router.push("/(tabs)/active-test")}
-          >
-            <Text style={styles.takeTestButtonText}>Take Test Now</Text>
-          </TouchableOpacity>
-        </View>
+        <EmptyState
+          testName="active test"
+          routePath="/(tabs)/active-test"
+          onTakeTest={() => router.push("/(tabs)/active-test")}
+        />
       ) : (
         <ScrollView
           style={styles.scrollView}
@@ -261,34 +179,24 @@ export default function ActiveResultsScreen() {
                 </View>
               </View>
 
-              <View style={styles.resultRow}>
-                <Text style={styles.resultLabel}>Target duration:</Text>
-                <Text style={styles.resultValue}>
-                  {result.targetDuration} ms
-                </Text>
-              </View>
+              <ResultRow
+                label="Target duration:"
+                value={`${result.targetDuration} ms`}
+              />
 
-              <View style={styles.resultRow}>
-                <Text style={styles.resultLabel}>Your duration:</Text>
-                <Text style={styles.resultValue}>{result.userDuration} ms</Text>
-              </View>
+              <ResultRow
+                label="Your duration:"
+                value={`${result.userDuration} ms`}
+              />
 
-              <View style={styles.resultRow}>
-                <Text style={styles.resultLabel}>Difference:</Text>
-                <Text style={styles.resultValue}>
-                  {Math.abs(result.userDuration - result.targetDuration)} ms
-                </Text>
-              </View>
+              <ResultRow
+                label="Difference:"
+                value={`${Math.abs(
+                  result.userDuration - result.targetDuration
+                )} ms`}
+              />
 
-              <View style={styles.deleteButtonContainer}>
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => deleteResult(result.id)}
-                >
-                  <FontAwesome name="trash" size={18} color="#f87171" />
-                  <Text style={styles.deleteButtonText}>Delete</Text>
-                </TouchableOpacity>
-              </View>
+              <DeleteButton onPress={() => deleteResult(result.id)} />
             </View>
           ))}
         </ScrollView>
@@ -307,44 +215,6 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     padding: 16,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    fontSize: 18,
-    color: "#a0aec0",
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  emptyText: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#e0e0e0",
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 16,
-    color: "#a0aec0",
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  takeTestButton: {
-    backgroundColor: "#3b82f6",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  takeTestButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
   },
   resultCard: {
     backgroundColor: "#1f2937",
@@ -391,41 +261,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: "#e0e0e0",
-  },
-  resultRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 8,
-  },
-  resultLabel: {
-    fontSize: 15,
-    color: "#a0aec0",
-  },
-  resultValue: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#e0e0e0",
-  },
-  headerRightContent: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  deleteButtonContainer: {
-    marginTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#2d3748",
-    paddingTop: 12,
-    alignItems: "flex-end",
-  },
-  deleteButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 8,
-  },
-  deleteButtonText: {
-    color: "#f87171",
-    marginLeft: 6,
-    fontSize: 14,
-    fontWeight: "500",
   },
 });
