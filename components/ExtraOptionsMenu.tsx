@@ -11,13 +11,13 @@ import {
 import { useColorScheme } from "./useColorScheme";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
-  clearAllResults as clearRegularityResults,
-  exportResults as exportRegularityResults,
-} from "@/app/pages/regularity-results";
-import {
-  clearAllResults as clearActiveResults,
-  exportResults as exportActiveResults,
+  exportActiveResults,
+  clearActiveResults,
 } from "@/app/pages/active-results";
+import {
+  exportRegularityResults,
+  clearRegularityResults,
+} from "@/app/pages/regularity-results";
 import { usePathname } from "expo-router";
 
 export function ExtraOptionsMenu() {

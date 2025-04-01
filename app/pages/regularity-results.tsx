@@ -30,7 +30,6 @@ type TestResult = {
   date: string;
 };
 
-// Storage key and event name constants
 const STORAGE_KEY = "regularityTestResults";
 const RESULTS_CLEARED_EVENT = "resultsCleared";
 
@@ -38,7 +37,7 @@ export const exportRegularityResults = async () => {
   await exportResults({
     storageKey: STORAGE_KEY,
     csvHeader:
-      "Date,Average Interval (ms),Standard Deviation (ms),Accuracy (%)\n",
+      "Day,Time,Average Interval (ms),Standard Deviation (ms),Accuracy (%)\n",
     formatRow: (result: TestResult) => {
       const date = new Date(result.date).toLocaleString();
       const avgInterval = result.avgInterval.toFixed(2);

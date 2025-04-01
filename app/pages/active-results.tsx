@@ -26,17 +26,18 @@ type TestResult = {
 };
 
 // Storage key and event name constants
-const STORAGE_KEY = "activeTest";
+const STORAGE_KEY = "activeTestResults";
 const RESULTS_CLEARED_EVENT = "activeResultsCleared";
 
 export const exportActiveResults = async () => {
   await exportResults({
     storageKey: STORAGE_KEY,
     csvHeader:
-      "Date,Emoji,Target Duration (ms),Your Duration (ms),Accuracy (%)\n",
+      "Day,Time,Target Duration (ms),Your Duration (ms),Accuracy (%)\n",
     formatRow: (result: TestResult) => {
       const date = new Date(result.timestamp).toLocaleString();
-      return `"${date}","${result.emoji}",${result.targetDuration},${result.userDuration},${result.accuracy}\n`;
+      const [day, time] = date.split(", ");
+      return `"${day}","${time}",${result.targetDuration},${result.userDuration},${result.accuracy}\n`;
     },
     fileNamePrefix: "active_test_results",
     dialogTitle: "Save Active Test Results",
