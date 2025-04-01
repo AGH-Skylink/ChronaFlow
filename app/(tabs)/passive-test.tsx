@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import { StyleSheet, TouchableOpacity, View, Text, TextInput } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { ResultRow } from "../../components/ResultRow";
+
+function randomTime(min:number, max:number):number {
+  return parseFloat((Math.random() * (max - min) + min).toFixed(1));
+}
 
 export default function PassiveTestScreen() {
   const [testStarted, setTestStarted] = useState(false);
@@ -8,21 +13,28 @@ export default function PassiveTestScreen() {
   const [displayTime, setDisplayTime] = useState(0);
   const [userInput, setUserInput] = useState("");
   const [result, setResult] = useState("");
+  const [awaitingInput, setAwaitingInput] = useState(false);
 
   const startTest = () => {
-    const time = Math.floor(Math.random() * 5) + 1; 
+    if (testStarted) return;
+    resetTest();
+    const time = randomTime(1, 5); 
     setTestStarted(true);
-    setTestCompleted(false);
+    setAwaitingInput(false);
     setDisplayTime(time);
 
     setTimeout(() => {
       setTestStarted(false);
+      setAwaitingInput(true);
     }, time * 1000);
   };
 
   const calculateResult = () => {
-    const difference = Math.abs(Number(userInput) - displayTime);
-    setResult(`Diffrence: ${difference} seconds`);
+    if (userInput === "") return;
+    const processedInput = userInput.replace(",",".");
+    const difference = Math.abs(Number(processedInput) - displayTime).toFixed(2);
+    setResult(difference);
+    setAwaitingInput(false);
     setTestCompleted(true);
   };
 
@@ -43,18 +55,30 @@ export default function PassiveTestScreen() {
         </Text>
       </View>
 
-      <TouchableOpacity
+      <View
         style={[
           styles.tapArea,
           testStarted ? styles.tapAreaActive : styles.completedArea,
         ]}
-        disabled={testStarted}
-        onPress={startTest}
-        activeOpacity={0.8}
       >
         {testStarted ? (
-          <Text style={styles.object}>⏺️ Object is visible</Text>
+          <Text style={styles.object}>👩‍🚀 Neil A. is visible</Text>
+        ) : awaitingInput ? (
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Your guess in seconds"
+              keyboardType="numeric"
+              value={userInput}
+              onChangeText={setUserInput}
+              placeholderTextColor="#a0aec0"
+            />
+            <TouchableOpacity style={styles.confirmButton} onPress={calculateResult}>
+              <Text style={styles.confirmButtonText}>Confirm</Text>
+            </TouchableOpacity>
+          </View>
         ) : testCompleted ? (
+
           <View style={styles.resultsContainer}>
             <Text style={styles.resultTitle}>Test Completed!</Text>
             <View style={styles.resultsCard}>
@@ -62,47 +86,28 @@ export default function PassiveTestScreen() {
               <View style={styles.divider} />
               <ResultRow label="Your guess" value={`${userInput} s`} />
               <View style={styles.divider} />
-              <ResultRow label="Difference" value={result} />
+              <ResultRow label="Difference" value={`${result} s`} />
             </View>
             <TouchableOpacity style={styles.resetButton} onPress={resetTest}>
               <Text style={styles.resetButtonText}>Start Again</Text>
             </TouchableOpacity>
           </View>
         ) : (
-          <View style={styles.counterContainer}>
+          <TouchableOpacity
+            style={styles.counterContainer}
+            onPress={startTest}
+            activeOpacity={0.8}
+          >
             <Text style={styles.counterText}>Tap to begin</Text>
-          </View>
-        )}
-      </TouchableOpacity>
-
-      {!testStarted && !testCompleted && (
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Your guess in seconds"
-            keyboardType="numeric"
-            value={userInput}
-            onChangeText={setUserInput}
-          />
-          <TouchableOpacity style={styles.confirmButton} onPress={calculateResult}>
-            <Text style={styles.confirmButtonText}>Confirm</Text>
           </TouchableOpacity>
-        </View>
-      )}
+        )}
+      </View>
 
       <StatusBar style="light" />
     </View>
   );
 }
 
-export function ResultRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.resultRow}>
-      <Text style={styles.resultLabel}>{label}</Text>
-      <Text style={styles.resultValue}>{value}</Text>
-    </View>
-  );
-}
 
 const styles = StyleSheet.create({
   container: {
@@ -216,21 +221,6 @@ const styles = StyleSheet.create({
   resultTitle: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#e0e0e0",
-  },
-  resultRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    paddingVertical: 12,
-  },
-  resultLabel: {
-    fontSize: 16,
-    color: "#a0aec0",
-  },
-  resultValue: {
-    fontSize: 18,
-    fontWeight: "600",
     color: "#e0e0e0",
   },
   divider: {
