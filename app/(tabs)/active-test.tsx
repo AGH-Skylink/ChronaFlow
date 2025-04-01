@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ResultRow } from "../../components/TestResultComponents";
+import { saveTestResult } from "@/utils/storageUtils";
 
 // Array of space-related emojis
 const spaceEmojis = [
@@ -63,22 +64,6 @@ export default function ActiveTest() {
     }
   };
 
-  const saveTestResult = async (result: TestResult) => {
-    try {
-      const existingResultsJSON = await AsyncStorage.getItem("activeTest");
-      const existingResults: TestResult[] = existingResultsJSON
-        ? JSON.parse(existingResultsJSON)
-        : [];
-
-      const updatedResults = [result, ...existingResults];
-
-      await AsyncStorage.setItem("activeTest", JSON.stringify(updatedResults));
-      console.log("Test result saved successfully");
-    } catch (error) {
-      console.error("Error saving test result:", error);
-    }
-  };
-
   const handlePressOut = () => {
     if (phase === "reproduction" && holdStart) {
       const duration = Date.now() - holdStart;
@@ -89,7 +74,6 @@ export default function ActiveTest() {
       setAccuracy(roundedAccuracy);
       setPhase("result");
 
-      // Save the test result
       const testResult: TestResult = {
         id: Date.now().toString(),
         timestamp: Date.now(),
@@ -98,7 +82,7 @@ export default function ActiveTest() {
         accuracy: roundedAccuracy,
         emoji: currentEmoji,
       };
-      saveTestResult(testResult);
+      saveTestResult("activeTestResults", testResult);
     }
   };
 
