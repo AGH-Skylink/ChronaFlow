@@ -65,6 +65,13 @@ function RootLayoutNav() {
             headerRight: () => <ExtraOptionsMenu />,
           }}
         />
+        <Stack.Screen
+          name="pages/active-results"
+          options={{
+            headerTitle: "Active Test Results",
+            headerRight: () => <ExtraOptionsMenu />,
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );

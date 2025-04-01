@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
+import { StyleSheet, ScrollView, View, Text, Alert } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -24,38 +17,39 @@ import {
 } from "../../components/TestResultComponents";
 
 type TestResult = {
-  avgInterval: number;
-  stdDevInterval: number;
+  id: string;
+  timestamp: number;
+  targetDuration: number;
+  userDuration: number;
   accuracy: number;
-  date: string;
+  emoji: string;
 };
 
-const STORAGE_KEY = "regularityTestResults";
-const RESULTS_CLEARED_EVENT = "resultsCleared";
+// Storage key and event name constants
+const STORAGE_KEY = "activeTestResults";
+const RESULTS_CLEARED_EVENT = "activeResultsCleared";
 
-export const exportRegularityResults = async () => {
+export const exportActiveResults = async () => {
   await exportResults({
     storageKey: STORAGE_KEY,
     csvHeader:
-      "Day,Time,Average Interval (ms),Standard Deviation (ms),Accuracy (%)\n",
+      "Day,Time,Target Duration (ms),Your Duration (ms),Accuracy (%)\n",
     formatRow: (result: TestResult) => {
-      const date = new Date(result.date).toLocaleString();
-      const avgInterval = result.avgInterval.toFixed(2);
-      const stdDev = result.stdDevInterval.toFixed(2);
-      const accuracy = result.accuracy.toFixed(1);
-      return `${date},${avgInterval},${stdDev},${accuracy}\n`;
+      const date = new Date(result.timestamp).toLocaleString();
+      const [day, time] = date.split(", ");
+      return `"${day}","${time}",${result.targetDuration},${result.userDuration},${result.accuracy}\n`;
     },
-    fileNamePrefix: "regularity_test_results",
-    dialogTitle: "Save Regularity Test Results",
+    fileNamePrefix: "active_test_results",
+    dialogTitle: "Save Active Test Results",
     eventName: RESULTS_CLEARED_EVENT,
   });
 };
 
-export const clearRegularityResults = () => {
+export const clearActiveResults = () => {
   clearAllResults(STORAGE_KEY, RESULTS_CLEARED_EVENT);
 };
 
-export default function RegularityResultsScreen() {
+export default function ActiveResultsScreen() {
   const router = useRouter();
   const [results, setResults] = useState<TestResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,10 +79,9 @@ export default function RegularityResultsScreen() {
 
       if (resultsJson) {
         const parsedResults = JSON.parse(resultsJson);
-        // Sort results by date (newest first)
+        // Sort results by timestamp (newest first)
         const sortedResults = parsedResults.sort(
-          (a: TestResult, b: TestResult) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime()
+          (a: TestResult, b: TestResult) => b.timestamp - a.timestamp
         );
         setResults(sortedResults);
       }
@@ -99,7 +92,14 @@ export default function RegularityResultsScreen() {
     }
   };
 
-  const deleteResult = (dateToDelete: string) => {
+  const getAccuracyBadgeColor = (accuracy: number) => {
+    if (accuracy >= 90) return "#15803d"; // Green for high accuracy
+    if (accuracy >= 70) return "#1e40af"; // Blue for good accuracy
+    if (accuracy >= 50) return "#a16207"; // Amber for moderate accuracy
+    return "#b91c1c"; // Red for low accuracy
+  };
+
+  const deleteResult = (idToDelete: string) => {
     Alert.alert(
       "Delete Result",
       "Are you sure you want to delete this result?",
@@ -118,10 +118,9 @@ export default function RegularityResultsScreen() {
               if (resultsJson) {
                 const parsedResults = JSON.parse(resultsJson);
                 const updatedResults = parsedResults.filter(
-                  (result: TestResult) => result.date !== dateToDelete
+                  (result: TestResult) => result.id !== idToDelete
                 );
 
-                // Save updated results
                 await AsyncStorage.setItem(
                   STORAGE_KEY,
                   JSON.stringify(updatedResults)
@@ -149,9 +148,9 @@ export default function RegularityResultsScreen() {
         <LoadingState />
       ) : results.length === 0 ? (
         <EmptyState
-          testName="regularity test"
-          routePath="/regularity-test"
-          onTakeTest={() => router.push("/regularity-test")}
+          testName="active test"
+          routePath="/(tabs)/active-test"
+          onTakeTest={() => router.push("/(tabs)/active-test")}
         />
       ) : (
         <ScrollView
@@ -161,25 +160,44 @@ export default function RegularityResultsScreen() {
           {results.map((result, index) => (
             <View key={index} style={styles.resultCard}>
               <View style={styles.resultHeader}>
-                <Text style={styles.resultDate}>{formatDate(result.date)}</Text>
-                <View style={styles.accuracyBadge}>
+                <View style={styles.dateEmojiContainer}>
+                  <Text style={styles.emoji}>{result.emoji}</Text>
+                  <Text style={styles.resultDate}>
+                    {formatDate(result.timestamp)}
+                  </Text>
+                </View>
+                <View
+                  style={[
+                    styles.accuracyBadge,
+                    {
+                      backgroundColor: getAccuracyBadgeColor(result.accuracy),
+                    },
+                  ]}
+                >
                   <Text style={styles.accuracyText}>
-                    {result.accuracy.toFixed(1)}% accuracy
+                    {result.accuracy}% accuracy
                   </Text>
                 </View>
               </View>
 
               <ResultRow
-                label="Average interval:"
-                value={`${result.avgInterval.toFixed(2)} ms`}
+                label="Target duration:"
+                value={`${result.targetDuration} ms`}
               />
 
               <ResultRow
-                label="Standard deviation:"
-                value={`${result.stdDevInterval.toFixed(2)} ms`}
+                label="Your duration:"
+                value={`${result.userDuration} ms`}
               />
 
-              <DeleteButton onPress={() => deleteResult(result.date)} />
+              <ResultRow
+                label="Difference:"
+                value={`${Math.abs(
+                  result.userDuration - result.targetDuration
+                )} ms`}
+              />
+
+              <DeleteButton onPress={() => deleteResult(result.id)} />
             </View>
           ))}
         </ScrollView>
@@ -222,17 +240,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#2d3748",
   },
+  dateEmojiContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  emoji: {
+    fontSize: 22,
+    marginRight: 8,
+  },
   resultDate: {
     fontSize: 16,
     fontWeight: "500",
     color: "#e0e0e0",
   },
-  headerRightContent: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   accuracyBadge: {
-    backgroundColor: "#1e40af",
     borderRadius: 20,
     paddingVertical: 4,
     paddingHorizontal: 10,
