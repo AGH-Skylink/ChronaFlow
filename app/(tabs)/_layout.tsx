@@ -52,6 +52,22 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="active-test"
+        options={{
+          title: "Active Test",
+          tabBarIcon: ({ color }) => <TabBarIcon name="eye" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="tests-results"
+        options={{
+          title: "Tests Results",
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="bar-chart" color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
