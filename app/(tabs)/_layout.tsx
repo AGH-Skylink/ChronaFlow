@@ -44,6 +44,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="passive-test"
+        options={{
+          title: "Passive Test",
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="play-circle" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="active-test"
         options={{
           title: "Active Test",
