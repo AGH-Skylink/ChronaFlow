@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { saveTestResult } from "@/utils/storageUtils";
+import { COLORS, typography, layout, testArea } from "@/constants/Styles";
+import { ResultRow } from "@/components/ResultRow";
+import { TestButton } from "@/components/TestButton";
+import { ResultsCard } from "@/components/ResultsCard";
 
-export default function TapTestScreen() {
+export default function RegularityTestScreen() {
   const [testStarted, setTestStarted] = useState(false);
   const [testCompleted, setTestCompleted] = useState(false);
   const [tapCount, setTapCount] = useState(0);
@@ -59,11 +64,16 @@ export default function TapTestScreen() {
       100 - (100 * Math.abs(avgInterval - targetInterval)) / targetInterval;
     accuracy = Math.max(0, Math.min(100, accuracy));
 
-    setResults({
+    const resultData = {
+      id: Date.now().toString(),
       avgInterval,
       stdDevInterval,
       accuracy,
-    });
+      date: new Date().toISOString(),
+    };
+
+    setResults(resultData);
+    saveTestResult("regularityTestResults", resultData);
   };
 
   const resetTest = () => {
@@ -99,7 +109,7 @@ export default function TapTestScreen() {
           <View style={styles.resultsContainer}>
             <Text style={styles.resultTitle}>Test Completed!</Text>
 
-            <View style={styles.resultsCard}>
+            <ResultsCard>
               <ResultRow
                 label="Average interval"
                 value={`${results.avgInterval.toFixed(2)} ms`}
@@ -116,11 +126,9 @@ export default function TapTestScreen() {
                 label="Timing accuracy"
                 value={`${results.accuracy.toFixed(1)}%`}
               />
-            </View>
+            </ResultsCard>
 
-            <TouchableOpacity style={styles.resetButton} onPress={resetTest}>
-              <Text style={styles.resetButtonText}>Start Again</Text>
-            </TouchableOpacity>
+            <TestButton title="Start Again" onPress={resetTest} />
           </View>
         ) : (
           <View style={styles.counterContainer}>
@@ -148,59 +156,32 @@ export default function TapTestScreen() {
   );
 }
 
-export function ResultRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.resultRow}>
-      <Text style={styles.resultLabel}>{label}</Text>
-      <Text style={styles.resultValue}>{value}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#121212",
-    padding: 30,
+    ...layout.container,
     paddingTop: 50,
   },
   headerContainer: {
     marginBottom: 20,
   },
   header: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 10,
+    ...typography.header,
     textAlign: "center",
-    color: "#e0e0e0",
   },
   instructions: {
-    fontSize: 17,
+    ...typography.subtitle,
     textAlign: "center",
-    color: "#a0aec0",
-    marginBottom: 5,
   },
   tapArea: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 16,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    ...testArea.container,
   },
   tapAreaActive: {
-    backgroundColor: "#1f2937",
+    ...testArea.active,
   },
   completedArea: {
-    backgroundColor: "#242424",
+    ...testArea.completed,
   },
+  // Rest of the styles remain the same
   counterContainer: {
     alignItems: "center",
     padding: 20,
@@ -209,14 +190,14 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "600",
     marginBottom: 16,
-    color: "#e0e0e0",
+    color: COLORS.text.primary,
   },
   tapCountText: {
     fontSize: 48,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 16,
-    color: "#e0e0e0",
+    color: COLORS.text.primary,
   },
   progressContainer: {
     height: 8,
@@ -227,63 +208,19 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: "100%",
-    backgroundColor: "#60a5fa",
+    backgroundColor: COLORS.primary,
   },
   resultsContainer: {
     width: "100%",
     padding: 20,
     alignItems: "center",
   },
-  resultsCard: {
-    width: "100%",
-    backgroundColor: "#2d3748",
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 16,
-    marginBottom: 24,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
   resultTitle: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#e0e0e0",
-  },
-  resultRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    paddingVertical: 12,
-  },
-  resultLabel: {
-    fontSize: 16,
-    color: "#a0aec0",
-  },
-  resultValue: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#e0e0e0",
+    color: COLORS.text.primary,
   },
   divider: {
-    height: 1,
-    width: "100%",
-    backgroundColor: "#3d4852",
-  },
-  resetButton: {
-    backgroundColor: "#3b82f6",
-    paddingVertical: 14,
-    paddingHorizontal: 36,
-    borderRadius: 8,
-  },
-  resetButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
+    ...layout.divider,
   },
 });

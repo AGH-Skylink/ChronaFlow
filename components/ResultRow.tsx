@@ -1,7 +1,13 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { COLORS, typography } from "@/constants/Styles";
 
-export function ResultRow({ label, value }: { label: string; value: string }) {
+interface ResultRowProps {
+  label: string;
+  value: string;
+}
+
+export function ResultRow({ label, value }: ResultRowProps) {
   return (
     <View style={styles.resultRow}>
       <Text style={styles.resultLabel}>{label}</Text>
@@ -11,19 +17,16 @@ export function ResultRow({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-    resultRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        width: "100%",
-        paddingVertical: 12,
-      },
-      resultLabel: {
-        fontSize: 16,
-        color: "#a0aec0",
-      },
-      resultValue: {
-        fontSize: 18,
-        fontWeight: "600",
-        color: "#e0e0e0",
-      },
+  resultRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    paddingVertical: 12,
+  },
+  resultLabel: {
+    ...typography.label,
+  },
+  resultValue: {
+    ...typography.value,
+  },
 });
