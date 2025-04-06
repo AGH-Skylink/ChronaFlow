@@ -148,6 +148,10 @@ export const TestStyles = StyleSheet.create({
     alignItems: "center",
     ...shadow.medium,
   },
+  disabledButton: {
+    opacity: 0.5,
+    backgroundColor: "#666",
+  },
   primaryButtonText: {
     color: "white",
     fontSize: 16,
