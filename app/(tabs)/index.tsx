@@ -45,7 +45,13 @@ export default function HomeScreen() {
             onPress={() => router.push("/regularity-test")}
           />
           <TestCard
-            title="Active Exposure Test"
+            title="Passive Test"
+            description="Press the button as soon as the object appears to measure your reaction time."
+            icon="eye"
+            onPress={() => router.push("/passive-test")}
+          />
+          <TestCard
+            title="Active Test"
             description="Press the button as soon as the object appears to measure your reaction time."
             icon="eye"
             onPress={() => router.push("/active-test")}
