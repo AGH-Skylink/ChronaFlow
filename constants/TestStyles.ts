@@ -169,7 +169,6 @@ export const TestStyles = StyleSheet.create({
     fontWeight: "600",
   },
 
-
   // Progress tracking
   progressContainer: {
     height: 8,
@@ -181,5 +180,21 @@ export const TestStyles = StyleSheet.create({
   progressBar: {
     height: "100%",
     backgroundColor: COLORS.primary,
+  },
+
+  // Start container
+  startContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+
+  sliderValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#007AFF',
+    textAlign: 'center',
+    marginTop: 10,
   },
 });

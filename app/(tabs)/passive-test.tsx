@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { TouchableOpacity, View, Text, TextInput } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { ResultRow } from "../../components/ResultRow";
@@ -6,6 +6,8 @@ import { TestStyles } from "@/constants/TestStyles";
 import { useRouter } from "expo-router";
 import { saveTestResult } from "@/utils/storageUtils";
 import { randomEmoji, randomTime } from "@/utils/test-utils";
+import { Countdown } from "@/components/Countdown";
+import Slider from "@react-native-community/slider";
 
 interface TestResult {
   id: string;
@@ -15,36 +17,60 @@ interface TestResult {
 }
 
 export default function PassiveTestScreen() {
+  const [testStarted, setTestStarted] = useState<boolean>(false);
+  const [isCountdownActive, setIsCountdownActive] = useState<boolean>(false);
   const [phase, setPhase] = useState<"exposure" | "input" | "result">(
     "exposure"
   );
   const [targetExposure, setTargetExposure] = useState<number>(0);
   const [currentEmoji, setCurrentEmoji] = useState<string>("🌙");
-  const [userInput, setUserInput] = useState<string>("");
-  const [isFocused, setIsFocused] = useState(false);
+  const [sliderValue, setSliderValue] = useState<number>(1000); // Default to 1000ms
+  const [isSlidingActive, setIsSlidingActive] = useState(false);
+  const [tempSliderValue, setTempSliderValue] = useState<number>(1000);
+
+  const handleStart = () => {
+    setTestStarted(true);
+    setIsCountdownActive(true);
+  };
+
+  const handleSlideValueChange = useCallback((value: number) => {
+    setSliderValue(value);
+  }, []);
+
+  const handleSlidingStart = useCallback(() => {
+    setIsSlidingActive(true);
+  }, []);
+
+  const handleSlidingComplete = useCallback((value: number) => {
+    setIsSlidingActive(false);
+    setSliderValue(value);
+  }, []);
 
   useEffect(() => {
-    if (phase === "exposure") {
+    if (phase === "exposure" && !isCountdownActive && testStarted) {
       const time = randomTime(1, 5) * 1000;
       setTargetExposure(time);
-
       setCurrentEmoji(randomEmoji());
+      setSliderValue(1000);
+      setTempSliderValue(1000);
 
       const timer = setTimeout(() => {
         setPhase("input");
       }, time);
       return () => clearTimeout(timer);
     }
-  }, [phase]);
+  }, [phase, isCountdownActive, testStarted]);
+
+  const handleCountdownComplete = () => {
+    setIsCountdownActive(false);
+  };
 
   const handleCalculateResults = () => {
-    const userDuration = parseFloat(userInput) * 1000;
-
     const result: TestResult = {
       id: Date.now().toString(),
       timestamp: Date.now(),
       targetExposure,
-      userInput: userDuration,
+      userInput: sliderValue,
     };
 
     saveTestResult("passiveTestResults", result);
@@ -53,97 +79,127 @@ export default function PassiveTestScreen() {
   };
 
   const resetTest = () => {
+    setTestStarted(false);
+    setIsCountdownActive(false);
     setPhase("exposure");
     setTargetExposure(0);
-    setUserInput("");
+    setSliderValue(1000);
     setCurrentEmoji(randomEmoji());
   };
 
   return (
     <View style={TestStyles.container}>
-      <View style={TestStyles.headerContainer}>
-        <Text style={TestStyles.header}>Passive Test</Text>
-        {phase === "exposure" && (
-          <Text style={TestStyles.instructions}>
-            Try to remember the exposure time.
+      {!testStarted ? (
+        <View style={TestStyles.startContainer}>
+          <Text style={TestStyles.header}>Passive Test</Text>
+          <Text style={[TestStyles.instructions, { marginVertical: 20 }]}>
+            You will see an emoji for a certain amount of time. Try to remember
+            how long it was displayed.
           </Text>
-        )}
-      </View>
+          <TouchableOpacity
+            style={TestStyles.primaryButton}
+            onPress={handleStart}
+          >
+            <Text style={TestStyles.primaryButtonText}>Tap to Begin</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <>
+          {isCountdownActive && (
+            <Countdown onComplete={handleCountdownComplete} />
+          )}
 
-      <View
-        style={[
-          TestStyles.testArea,
-          phase === "result"
-            ? TestStyles.resultsContainer
-            : TestStyles.testContainer,
-        ]}
-      >
-        {phase === "exposure" && (
-          <View style={TestStyles.testContainer}>
-            <Text style={TestStyles.testText}>Watch the exposure...</Text>
-            <Text style={TestStyles.emoji}>{currentEmoji}</Text>
+          <View style={TestStyles.headerContainer}>
+            <Text style={TestStyles.header}>Passive Test</Text>
+            {phase === "exposure" && !isCountdownActive && (
+              <Text style={TestStyles.instructions}>
+                Try to remember the exposure time.
+              </Text>
+            )}
           </View>
-        )}
-        {phase === "input" && (
-          <View style={TestStyles.inputContainer}>
-            <Text style={TestStyles.inputLabel}>
-              How many milliseconds was it visible?
-            </Text>
 
-            <TextInput
-              style={[
-                TestStyles.inputField,
-                isFocused && TestStyles.inputFieldFocused,
-                { marginBottom: 20 },
-              ]}
-              placeholder="0.0ms"
-              keyboardType="decimal-pad"
-              value={userInput}
-              onChangeText={(text) => {
-                const sanitizedText = text.replace(/[^0-9.]/g, "").trim();
-                setUserInput(sanitizedText);
-              }}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              placeholderTextColor="#a0aec0"
-              maxLength={4}
-            />
-            <TouchableOpacity
-              style={TestStyles.primaryButton}
-              onPress={handleCalculateResults}
-              disabled={!userInput.trim()}
-            >
-              {userInput.trim() ? (
-                <Text style={TestStyles.primaryButtonText}>Submit</Text>
-              ) : (
-                <Text style={TestStyles.primaryButtonText}>Submit</Text>
-              )}
-            </TouchableOpacity>
+          <View
+            style={[
+              TestStyles.testArea,
+              phase === "result"
+                ? TestStyles.resultsContainer
+                : TestStyles.testContainer,
+            ]}
+          >
+            {phase === "exposure" && !isCountdownActive && (
+              <View style={TestStyles.testContainer}>
+                <Text style={TestStyles.testText}>Watch the exposure...</Text>
+                <Text style={TestStyles.emoji}>{currentEmoji}</Text>
+              </View>
+            )}
+            {phase === "input" && (
+              <View style={TestStyles.inputContainer}>
+                <Text style={TestStyles.inputLabel}>
+                  How many milliseconds was it visible?
+                </Text>
+
+                <Text
+                  style={{
+                    fontSize: 24,
+                    fontWeight: "bold",
+                    color: "#007AFF",
+                    textAlign: "center",
+                    marginTop: 10,
+                  }}
+                >
+                  {`${sliderValue.toFixed(0)} ms`}
+                </Text>
+
+                <Slider
+                  style={{ width: "100%", height: 40, marginVertical: 20 }}
+                  minimumValue={1000}
+                  maximumValue={5000}
+                  step={100}
+                  value={isSlidingActive ? tempSliderValue : sliderValue}
+                  onValueChange={handleSlideValueChange}
+                  onSlidingStart={handleSlidingStart}
+                  onSlidingComplete={handleSlidingComplete}
+                  minimumTrackTintColor="#007AFF"
+                  maximumTrackTintColor="#d3d3d3"
+                  thumbTintColor="#007AFF"
+                />
+
+                <TouchableOpacity
+                  style={TestStyles.primaryButton}
+                  onPress={handleCalculateResults}
+                >
+                  <Text style={TestStyles.primaryButtonText}>Submit</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            {phase === "result" && (
+              <View style={TestStyles.resultsContainer}>
+                <Text style={TestStyles.title}>Test Completed!</Text>
+
+                <View style={TestStyles.resultsCard}>
+                  <ResultRow
+                    label="Target Duration"
+                    value={`${targetExposure} ms`}
+                  />
+                  <View style={TestStyles.divider} />
+
+                  <ResultRow
+                    label="Your Input"
+                    value={`${sliderValue.toFixed(0)} ms`}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={TestStyles.resetButton}
+                  onPress={resetTest}
+                >
+                  <Text style={TestStyles.resetButtonText}>Try Again</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
-        )}
-        {phase === "result" && (
-          <View style={TestStyles.resultsContainer}>
-            <Text style={TestStyles.title}>Test Completed!</Text>
-
-            <View style={TestStyles.resultsCard}>
-              <ResultRow
-                label="Target Duration"
-                value={`${targetExposure} ms`}
-              />
-              <View style={TestStyles.divider} />
-
-              <ResultRow label="Your Input" value={`${userInput} ms`} />
-            </View>
-
-            <TouchableOpacity
-              style={TestStyles.resetButton}
-              onPress={resetTest}
-            >
-              <Text style={TestStyles.resetButtonText}>Try Again</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
+        </>
+      )}
       <StatusBar style="light" />
     </View>
   );
