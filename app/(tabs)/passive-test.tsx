@@ -1,161 +1,150 @@
-import React, { useState } from "react";
-import {
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  Text,
-  TextInput,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { TouchableOpacity, View, Text, TextInput } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { ResultRow } from "../../components/ResultRow";
 import { TestStyles } from "@/constants/TestStyles";
+import { useRouter } from "expo-router";
+import { saveTestResult } from "@/utils/storageUtils";
+import { randomEmoji, randomTime } from "@/utils/test-utils";
 
-function randomTime(min: number, max: number): number {
-  return parseFloat((Math.random() * (max - min) + min).toFixed(1));
+interface TestResult {
+  id: string;
+  timestamp: number;
+  targetExposure: number;
+  userInput: number;
 }
 
 export default function PassiveTestScreen() {
-  const [testStarted, setTestStarted] = useState(false);
-  const [testCompleted, setTestCompleted] = useState(false);
-  const [displayTime, setDisplayTime] = useState(0);
-  const [userInput, setUserInput] = useState("");
-  const [result, setResult] = useState("");
-  const [awaitingInput, setAwaitingInput] = useState(false);
+  const [phase, setPhase] = useState<"exposure" | "input" | "result">(
+    "exposure"
+  );
+  const [targetExposure, setTargetExposure] = useState<number>(0);
+  const [currentEmoji, setCurrentEmoji] = useState<string>("🌙");
+  const [userInput, setUserInput] = useState<string>("");
   const [isFocused, setIsFocused] = useState(false);
 
-  const startTest = () => {
-    if (testStarted) return;
-    resetTest();
-    const time = randomTime(1, 5);
-    setTestStarted(true);
-    setAwaitingInput(false);
-    setDisplayTime(time);
+  useEffect(() => {
+    if (phase === "exposure") {
+      const time = randomTime(1, 5) * 1000;
+      setTargetExposure(time);
 
-    setTimeout(() => {
-      setTestStarted(false);
-      setAwaitingInput(true);
-    }, time * 1000);
-  };
+      setCurrentEmoji(randomEmoji());
 
-  const calculateResult = () => {
-    if (userInput === "") return;
-    const processedInput = userInput.replace(",", ".");
-    const difference = Math.abs(Number(processedInput) - displayTime).toFixed(
-      2
-    );
-    setResult(difference);
-    setAwaitingInput(false);
-    setTestCompleted(true);
+      const timer = setTimeout(() => {
+        setPhase("input");
+      }, time);
+      return () => clearTimeout(timer);
+    }
+  }, [phase]);
+
+  const handleCalculateResults = () => {
+    const userDuration = parseFloat(userInput) * 1000;
+
+    const result: TestResult = {
+      id: Date.now().toString(),
+      timestamp: Date.now(),
+      targetExposure,
+      userInput: userDuration,
+    };
+
+    saveTestResult("passiveTestResults", result);
+
+    setPhase("result");
   };
 
   const resetTest = () => {
-    setTestStarted(false);
-    setTestCompleted(false);
+    setPhase("exposure");
+    setTargetExposure(0);
     setUserInput("");
-    setResult("");
-    setDisplayTime(0);
+    setCurrentEmoji(randomEmoji());
   };
 
   return (
     <View style={TestStyles.container}>
       <View style={TestStyles.headerContainer}>
         <Text style={TestStyles.header}>Passive Test</Text>
-        {testCompleted ? (
+        {phase === "exposure" && (
           <Text style={TestStyles.instructions}>
-            Observe the object and estimate its duration.
+            Try to remember the exposure time.
           </Text>
-        ) : null}
+        )}
       </View>
 
       <View
         style={[
           TestStyles.testArea,
-          testStarted ? TestStyles.activeArea : TestStyles.inactiveArea,
+          phase === "result"
+            ? TestStyles.resultsContainer
+            : TestStyles.testContainer,
         ]}
       >
-        {testStarted ? (
-          <Text style={styles.object}>👩‍🚀 Neil A. is visible</Text>
-        ) : awaitingInput ? (
+        {phase === "exposure" && (
+          <View style={TestStyles.testContainer}>
+            <Text style={TestStyles.testText}>Watch the exposure...</Text>
+            <Text style={TestStyles.emoji}>{currentEmoji}</Text>
+          </View>
+        )}
+        {phase === "input" && (
           <View style={TestStyles.inputContainer}>
-            <Text style={TestStyles.inputLabel}>How long was it visible?</Text>
+            <Text style={TestStyles.inputLabel}>
+              How many milliseconds was it visible?
+            </Text>
 
-            <View style={styles.timeInputWrapper}>
-              <TextInput
-                style={[
-                  TestStyles.inputField,
-                  isFocused && TestStyles.inputFieldFocused,
-                ]}
-                placeholder="0.0"
-                keyboardType="decimal-pad"
-                value={userInput}
-                onChangeText={setUserInput}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                placeholderTextColor="#a0aec0"
-                maxLength={4}
-              />
-              <Text style={styles.unitText}>s</Text>
-            </View>
-
+            <TextInput
+              style={[
+                TestStyles.inputField,
+                isFocused && TestStyles.inputFieldFocused,
+                { marginBottom: 20 },
+              ]}
+              placeholder="0.0ms"
+              keyboardType="decimal-pad"
+              value={userInput}
+              onChangeText={(text) => {
+                const sanitizedText = text.replace(/[^0-9.]/g, "").trim();
+                setUserInput(sanitizedText);
+              }}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              placeholderTextColor="#a0aec0"
+              maxLength={4}
+            />
             <TouchableOpacity
               style={TestStyles.primaryButton}
-              onPress={calculateResult}
+              onPress={handleCalculateResults}
+              disabled={!userInput.trim()}
             >
-              <Text style={TestStyles.primaryButtonText}>Submit</Text>
+              {userInput.trim() ? (
+                <Text style={TestStyles.primaryButtonText}>Submit</Text>
+              ) : (
+                <Text style={TestStyles.primaryButtonText}>Submit</Text>
+              )}
             </TouchableOpacity>
           </View>
-        ) : testCompleted ? (
+        )}
+        {phase === "result" && (
           <View style={TestStyles.resultsContainer}>
-            <Text style={TestStyles.resultsTitle}>Test Completed!</Text>
+            <Text style={TestStyles.title}>Test Completed!</Text>
+
             <View style={TestStyles.resultsCard}>
-              <ResultRow label="Displayed time" value={`${displayTime} s`} />
+              <ResultRow
+                label="Target Duration"
+                value={`${targetExposure} ms`}
+              />
               <View style={TestStyles.divider} />
-              <ResultRow label="Your guess" value={`${userInput} s`} />
-              <View style={TestStyles.divider} />
-              <ResultRow label="Difference" value={`${result} s`} />
+
+              <ResultRow label="Your Input" value={`${userInput} ms`} />
             </View>
+
             <TouchableOpacity
               style={TestStyles.resetButton}
               onPress={resetTest}
             >
-              <Text style={TestStyles.resetButtonText}>Start Again</Text>
+              <Text style={TestStyles.resetButtonText}>Try Again</Text>
             </TouchableOpacity>
           </View>
-        ) : (
-          <TouchableOpacity
-            style={TestStyles.startButtonContainer}
-            onPress={startTest}
-            activeOpacity={0.8}
-          >
-            <Text style={TestStyles.startButtonText}>Tap to begin</Text>
-          </TouchableOpacity>
         )}
       </View>
-
       <StatusBar style="light" />
     </View>
   );
 }
-
-// Keep only component-specific styles that aren't shared
-const styles = StyleSheet.create({
-  timeInputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 30,
-  },
-  unitText: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#a0aec0",
-    marginLeft: 10,
-  },
-  object: {
-    fontSize: 48,
-    color: "#60a5fa",
-    fontWeight: "bold",
-    margin: 20,
-    textAlign: "center",
-  },
-});

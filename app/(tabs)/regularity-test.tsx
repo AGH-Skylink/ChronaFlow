@@ -116,13 +116,13 @@ export default function RegularityTestScreen() {
             <TestButton title="Start Again" onPress={resetTest} />
           </View>
         ) : (
-          <View style={TestStyles.startButtonContainer}>
+          <View style={TestStyles.testContainer}>
             {testStarted ? null : (
-              <Text style={TestStyles.startButtonText}>Tap to begin</Text>
+              <Text style={TestStyles.testText}>Tap to begin</Text>
             )}
             {testStarted && (
               <View>
-                <Text style={TestStyles.startButtonText}>{tapCount} / 25</Text>
+                <Text style={TestStyles.testText}>{tapCount} / 25</Text>
                 <View style={TestStyles.progressContainer}>
                   <View
                     style={[
