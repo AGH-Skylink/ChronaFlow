@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "AATC_APP",
-    "slug": "AATC_APP",
-    "version": "1.0.0",
+    "name": "ChronaFlow",
+    "slug": "ChronaFlow",
+    "version": "0.0.2",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/chronaflow.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/chronaflow.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -18,9 +18,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/chronaflow.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.skylink.chronaflow"
     },
     "web": {
       "bundler": "metro",
@@ -32,6 +33,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "6337325b-643a-4bf8-9781-0e4efca00dee"
+      }
     }
   }
 }

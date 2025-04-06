@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
-import { Alert } from "react-native";
+import { Alert, Platform } from "react-native";
 import { EventRegister } from "react-native-event-listeners";
 
 export interface BaseTestResult {
@@ -18,7 +18,43 @@ export interface ExportConfig {
   eventName: string;
 }
 
+const exportResultsWeb = async (config: ExportConfig) => {
+  try {
+    const resultsJson = await AsyncStorage.getItem(config.storageKey);
+    if (resultsJson) {
+      const parsedResults = JSON.parse(resultsJson);
+      let csvContent = config.csvHeader;
+      parsedResults.forEach((result: any) => {
+        csvContent += config.formatRow(result);
+      });
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const fileDate = new Date().toISOString().replace(/[:.]/g, "-");
+      link.href = url;
+      link.setAttribute("download", `${config.fileNamePrefix}_${fileDate}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      alert("No results found to export.");
+    }
+  } catch (error) {
+    console.error("Error exporting results:", error);
+    alert("Error exporting results. Please try again.");
+  }
+}
+
 export const exportResults = async (config: ExportConfig) => {
+  if (Platform.OS === "web") {
+    exportResultsWeb(config);
+  } else if (Platform.OS === "android" || Platform.OS === "ios") {
+    exportResultsMobile(config);
+  }
+} 
+
+const exportResultsMobile = async (config: ExportConfig) => {
   try {
     const resultsJson = await AsyncStorage.getItem(config.storageKey);
 
