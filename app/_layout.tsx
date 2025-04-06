@@ -72,6 +72,13 @@ function RootLayoutNav() {
             headerRight: () => <ExtraOptionsMenu />,
           }}
         />
+        <Stack.Screen
+          name="pages/passive-results"
+          options={{
+            headerTitle: "Passive Test Results",
+            headerRight: () => <ExtraOptionsMenu />,
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );

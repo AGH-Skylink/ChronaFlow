@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
+import { StyleSheet, ScrollView, View, Text, Alert } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -23,37 +16,37 @@ import {
   ResultRow,
 } from "../../components/TestResultComponents";
 
-type TestResult = {
-  avgInterval: number;
-  stdDevInterval: number;
-  accuracy: number;
-  date: string;
-};
+interface TestResult {
+  id: string;
+  timestamp: number;
+  targetExposure: number;
+  userInput: number;
+}
 
-const STORAGE_KEY = "regularityTestResults";
-const RESULTS_CLEARED_EVENT = "resultsCleared";
+// Storage key and event name constants
+const STORAGE_KEY = "passiveTestResults";
+const RESULTS_CLEARED_EVENT = "passiveResultsCleared";
 
-export const exportRegularityResults = async () => {
+export const exportPassiveResults = async () => {
   await exportResults({
     storageKey: STORAGE_KEY,
-    csvHeader: "Day,Time,Average Interval (ms),Standard Deviation (ms)\n",
+    csvHeader: "Day,Time,Target Duration (ms),Your Duration (ms))\n",
     formatRow: (result: TestResult) => {
-      const date = new Date(result.date).toLocaleString();
-      const avgInterval = result.avgInterval.toFixed(2);
-      const stdDev = result.stdDevInterval.toFixed(2);
-      return `${date},${avgInterval},${stdDev}\n`;
+      const date = new Date(result.timestamp).toLocaleString();
+      const [day, time] = date.split(", ");
+      return `"${day}","${time}",${result.targetExposure},${result.userInput}\n`;
     },
-    fileNamePrefix: "regularity_test_results",
-    dialogTitle: "Save Regularity Test Results",
+    fileNamePrefix: "passive_test_results",
+    dialogTitle: "Save Passive Test Results",
     eventName: RESULTS_CLEARED_EVENT,
   });
 };
 
-export const clearRegularityResults = () => {
+export const clearPassiveResults = () => {
   clearAllResults(STORAGE_KEY, RESULTS_CLEARED_EVENT);
 };
 
-export default function RegularityResultsScreen() {
+export default function PassiveResultsScreen() {
   const router = useRouter();
   const [results, setResults] = useState<TestResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,10 +76,9 @@ export default function RegularityResultsScreen() {
 
       if (resultsJson) {
         const parsedResults = JSON.parse(resultsJson);
-        // Sort results by date (newest first)
+        // Sort results by timestamp (newest first)
         const sortedResults = parsedResults.sort(
-          (a: TestResult, b: TestResult) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime()
+          (a: TestResult, b: TestResult) => b.timestamp - a.timestamp
         );
         setResults(sortedResults);
       }
@@ -97,7 +89,7 @@ export default function RegularityResultsScreen() {
     }
   };
 
-  const deleteResult = (dateToDelete: string) => {
+  const deleteResult = (idToDelete: string) => {
     Alert.alert(
       "Delete Result",
       "Are you sure you want to delete this result?",
@@ -116,10 +108,9 @@ export default function RegularityResultsScreen() {
               if (resultsJson) {
                 const parsedResults = JSON.parse(resultsJson);
                 const updatedResults = parsedResults.filter(
-                  (result: TestResult) => result.date !== dateToDelete
+                  (result: TestResult) => result.id !== idToDelete
                 );
 
-                // Save updated results
                 await AsyncStorage.setItem(
                   STORAGE_KEY,
                   JSON.stringify(updatedResults)
@@ -147,9 +138,9 @@ export default function RegularityResultsScreen() {
         <LoadingState />
       ) : results.length === 0 ? (
         <EmptyState
-          testName="regularity test"
-          routePath="/regularity-test"
-          onTakeTest={() => router.push("/regularity-test")}
+          testName="passive test"
+          routePath="/(tabs)/passive-test"
+          onTakeTest={() => router.push("/(tabs)/passive-test")}
         />
       ) : (
         <ScrollView
@@ -159,20 +150,31 @@ export default function RegularityResultsScreen() {
           {results.map((result, index) => (
             <View key={index} style={styles.resultCard}>
               <View style={styles.resultHeader}>
-                <Text style={styles.resultDate}>{formatDate(result.date)}</Text>
+                <View style={styles.dateEmojiContainer}>
+                  <Text style={styles.resultDate}>
+                    {formatDate(result.timestamp)}
+                  </Text>
+                </View>
               </View>
 
               <ResultRow
-                label="Average interval:"
-                value={`${result.avgInterval.toFixed(2)} ms`}
+                label="Target duration:"
+                value={`${result.targetExposure} ms`}
               />
 
               <ResultRow
-                label="Standard deviation:"
-                value={`${result.stdDevInterval.toFixed(2)} ms`}
+                label="Your duration:"
+                value={`${result.userInput} ms`}
               />
 
-              <DeleteButton onPress={() => deleteResult(result.date)} />
+              <ResultRow
+                label="Difference:"
+                value={`${Math.abs(
+                  result.userInput - result.targetExposure
+                )} ms`}
+              />
+
+              <DeleteButton onPress={() => deleteResult(result.id)} />
             </View>
           ))}
         </ScrollView>
@@ -215,17 +217,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#2d3748",
   },
+  dateEmojiContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  emoji: {
+    fontSize: 22,
+    marginRight: 8,
+  },
   resultDate: {
     fontSize: 16,
     fontWeight: "500",
     color: "#e0e0e0",
   },
-  headerRightContent: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   accuracyBadge: {
-    backgroundColor: "#1e40af",
     borderRadius: 20,
     paddingVertical: 4,
     paddingHorizontal: 10,
