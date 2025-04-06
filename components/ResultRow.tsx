@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { COLORS, typography } from "@/constants/Styles";
+import { typography } from "@/constants/Styles";
 
 interface ResultRowProps {
   label: string;

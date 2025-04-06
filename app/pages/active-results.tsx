@@ -8,7 +8,7 @@ import {
   exportResults,
   clearAllResults,
   formatDate,
-} from "../../utils/test-results-utils";
+} from "../../utils/results-utls";
 import {
   LoadingState,
   EmptyState,
@@ -16,14 +16,12 @@ import {
   ResultRow,
 } from "../../components/TestResultComponents";
 
-type TestResult = {
+interface TestResult {
   id: string;
   timestamp: number;
   targetDuration: number;
   userDuration: number;
-  accuracy: number;
-  emoji: string;
-};
+}
 
 // Storage key and event name constants
 const STORAGE_KEY = "activeTestResults";
@@ -32,12 +30,11 @@ const RESULTS_CLEARED_EVENT = "activeResultsCleared";
 export const exportActiveResults = async () => {
   await exportResults({
     storageKey: STORAGE_KEY,
-    csvHeader:
-      "Day,Time,Target Duration (ms),Your Duration (ms),Accuracy (%)\n",
+    csvHeader: "Day,Time,Target Duration (ms),Your Duration (ms))\n",
     formatRow: (result: TestResult) => {
       const date = new Date(result.timestamp).toLocaleString();
       const [day, time] = date.split(", ");
-      return `"${day}","${time}",${result.targetDuration},${result.userDuration},${result.accuracy}\n`;
+      return `"${day}","${time}",${result.targetDuration},${result.userDuration}\n`;
     },
     fileNamePrefix: "active_test_results",
     dialogTitle: "Save Active Test Results",
@@ -90,13 +87,6 @@ export default function ActiveResultsScreen() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getAccuracyBadgeColor = (accuracy: number) => {
-    if (accuracy >= 90) return "#15803d"; // Green for high accuracy
-    if (accuracy >= 70) return "#1e40af"; // Blue for good accuracy
-    if (accuracy >= 50) return "#a16207"; // Amber for moderate accuracy
-    return "#b91c1c"; // Red for low accuracy
   };
 
   const deleteResult = (idToDelete: string) => {
@@ -161,21 +151,8 @@ export default function ActiveResultsScreen() {
             <View key={index} style={styles.resultCard}>
               <View style={styles.resultHeader}>
                 <View style={styles.dateEmojiContainer}>
-                  <Text style={styles.emoji}>{result.emoji}</Text>
                   <Text style={styles.resultDate}>
                     {formatDate(result.timestamp)}
-                  </Text>
-                </View>
-                <View
-                  style={[
-                    styles.accuracyBadge,
-                    {
-                      backgroundColor: getAccuracyBadgeColor(result.accuracy),
-                    },
-                  ]}
-                >
-                  <Text style={styles.accuracyText}>
-                    {result.accuracy}% accuracy
                   </Text>
                 </View>
               </View>
