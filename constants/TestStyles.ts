@@ -52,7 +52,7 @@ export const TestStyles = StyleSheet.create({
   },
 
   // Start button container
-  startButtonContainer: {
+  testContainer: {
     backgroundColor: "#242424",
     alignItems: "center",
     justifyContent: "center",
@@ -60,7 +60,7 @@ export const TestStyles = StyleSheet.create({
     height: "90%",
     borderRadius: 16,
   },
-  startButtonText: {
+  testText: {
     textAlign: "center",
     fontSize: 26,
     fontWeight: "600",
@@ -74,6 +74,7 @@ export const TestStyles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 30,
+    overflowY: "scroll",
   },
   inputLabel: {
     fontSize: 22,
@@ -106,6 +107,8 @@ export const TestStyles = StyleSheet.create({
     padding: 20,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: COLORS.background.secondary,
+    borderRadius: 16,
   },
   resultsTitle: {
     ...typography.title,
@@ -129,12 +132,17 @@ export const TestStyles = StyleSheet.create({
     width: "100%",
     backgroundColor: "#3d4852",
   },
-  
+  emoji: {
+    fontSize: 48,
+    color: COLORS.text.primary,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
   // Buttons
   primaryButton: {
     backgroundColor: COLORS.primary,
-    paddingVertical: 16,
-    paddingHorizontal: 36,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 12,
     width: "80%",
     alignItems: "center",

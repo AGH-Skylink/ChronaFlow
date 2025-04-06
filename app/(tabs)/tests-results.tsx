@@ -28,7 +28,12 @@ export default function TestsResultsScreen() {
           icon="hand-o-up"
           onPress={() => router.push("/pages/regularity-results")}
         />
-
+        <TestCard
+          title="Passive Test"
+          description="Press the button as soon as the object appears to measure your reaction time."
+          icon="play-circle"
+          onPress={() => router.push("/pages/passive-results")}
+        />
         <TestCard
           title="Active Exposure Test Results"
           description="View your history of reaction time tests"
