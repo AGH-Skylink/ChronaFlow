@@ -6,9 +6,11 @@ import { TestButton } from "@/components/TestButton";
 import { ResultsCard } from "@/components/ResultsCard";
 import { TestStyles } from "@/constants/TestStyles";
 import { View, Text, TouchableOpacity } from "react-native";
+import { Countdown } from "@/components/Countdown";
 
 export default function RegularityTestScreen() {
   const [testStarted, setTestStarted] = useState(false);
+  const [isCountdownActive, setIsCountdownActive] = useState<boolean>(false);
   const [testCompleted, setTestCompleted] = useState(false);
   const [tapCount, setTapCount] = useState(0);
   const [tapTimestamps, setTapTimestamps] = useState<number[]>([]);
@@ -17,15 +19,19 @@ export default function RegularityTestScreen() {
     stdDevInterval: 0,
   });
 
+  const handleStart = () => {
+    setTestStarted(true);
+    setIsCountdownActive(true);
+  };
+
+  const handleCountdownComplete = () => {
+    setIsCountdownActive(false);
+  };
+
   const recordTap = () => {
-    if (testCompleted) return;
+    if (testCompleted || !testStarted || isCountdownActive) return;
 
     const timestamp = Date.now();
-
-    if (!testStarted) {
-      setTestStarted(true);
-    }
-
     setTapCount((prevCount) => {
       const newCount = prevCount + 1;
       setTapTimestamps((prev) => [...prev, timestamp]);
@@ -73,6 +79,7 @@ export default function RegularityTestScreen() {
 
   const resetTest = () => {
     setTestStarted(false);
+    setIsCountdownActive(false);
     setTestCompleted(false);
     setTapCount(0);
     setTapTimestamps([]);
@@ -84,44 +91,59 @@ export default function RegularityTestScreen() {
 
   return (
     <View style={TestStyles.container}>
-      <View style={TestStyles.headerContainer}>
-        <Text style={TestStyles.header}>Tap Test</Text>
-        {testCompleted ? (
-          <Text style={TestStyles.instructions}>Test completed</Text>
-        ) : (
-          <Text style={TestStyles.instructions}>
-            Tap the screen at 1-second intervals.
+      {!testStarted ? (
+        <View style={TestStyles.startContainer}>
+          <Text style={TestStyles.header}>Regularity Test</Text>
+          <Text style={[TestStyles.instructions, { marginVertical: 20 }]}>
+            Try to tap the screen at regular 1-second intervals. You will need
+            to complete 25 taps to finish the test.
           </Text>
-        )}
-      </View>
+          <TouchableOpacity
+            style={TestStyles.primaryButton}
+            onPress={handleStart}
+          >
+            <Text style={TestStyles.primaryButtonText}>Tap to Begin</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <>
+          {isCountdownActive && (
+            <Countdown onComplete={handleCountdownComplete} />
+          )}
 
-      <TouchableOpacity onPress={recordTap} activeOpacity={0.8}>
-        {testCompleted ? (
-          <View style={TestStyles.resultsContainer}>
-            <Text style={TestStyles.resultsTitle}>Test Completed!</Text>
-
-            <ResultsCard>
-              <ResultRow
-                label="Average interval"
-                value={`${results.avgInterval.toFixed(2)} s`}
-              />
-              <View style={TestStyles.divider} />
-
-              <ResultRow
-                label="Standard Deviation"
-                value={`${results.stdDevInterval.toFixed(2)} s`}
-              />
-            </ResultsCard>
-
-            <TestButton title="Start Again" onPress={resetTest} />
-          </View>
-        ) : (
-          <View style={TestStyles.testContainer}>
-            {testStarted ? null : (
-              <Text style={TestStyles.testText}>Tap to begin</Text>
+          <View style={TestStyles.headerContainer}>
+            <Text style={TestStyles.header}>Regularity Test</Text>
+            {testCompleted ? (
+              <Text style={TestStyles.instructions}>Test completed</Text>
+            ) : (
+              <Text style={TestStyles.instructions}>
+                Tap the screen at 1-second intervals.
+              </Text>
             )}
-            {testStarted && (
-              <View>
+          </View>
+
+          <TouchableOpacity onPress={recordTap} activeOpacity={0.8}>
+            {testCompleted ? (
+              <View style={TestStyles.resultsContainer}>
+                <Text style={TestStyles.resultsTitle}>Test Completed!</Text>
+
+                <ResultsCard>
+                  <ResultRow
+                    label="Average interval"
+                    value={`${results.avgInterval.toFixed(2)} s`}
+                  />
+                  <View style={TestStyles.divider} />
+
+                  <ResultRow
+                    label="Standard Deviation"
+                    value={`${results.stdDevInterval.toFixed(2)} s`}
+                  />
+                </ResultsCard>
+
+                <TestButton title="Start Again" onPress={resetTest} />
+              </View>
+            ) : (
+              <View style={TestStyles.testContainer}>
                 <Text style={TestStyles.testText}>{tapCount} / 25</Text>
                 <View style={TestStyles.progressContainer}>
                   <View
@@ -133,9 +155,9 @@ export default function RegularityTestScreen() {
                 </View>
               </View>
             )}
-          </View>
-        )}
-      </TouchableOpacity>
+          </TouchableOpacity>
+        </>
+      )}
       <StatusBar style="light" />
     </View>
   );

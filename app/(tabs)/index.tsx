@@ -17,7 +17,7 @@ export default function HomeScreen() {
         <View style={styles.headerSection}>
           <Text style={styles.title}>Cognitive Assessment</Text>
           <Text style={styles.subtitle}>
-            Simple tools to measure cognitive function
+            Simple tools to measure subjective time perception (STP).
           </Text>
         </View>
 
@@ -25,13 +25,12 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>About</Text>
           <Text style={styles.paragraph}>
             This application provides a suite of cognitive assessment tools
-            designed to measure various aspects of neurological function,
-            reaction time, and coordination.
+            designed to measure STP.
           </Text>
           <Text style={styles.paragraph}>
             All tests are designed to be simple to administer and provide
-            instant feedback. Results can be used to track changes in cognitive
-            function over time.
+            instant feedback. Results can be used to track changes in subjective
+            time perception over the period of time.
           </Text>
         </View>
 
@@ -46,13 +45,13 @@ export default function HomeScreen() {
           />
           <TestCard
             title="Passive Test"
-            description="Press the button as soon as the object appears to measure your reaction time."
+            description="Try measure the time the object is exposed to you. Then using the slider, set the time you think it was exposed."
             icon="play-circle"
             onPress={() => router.push("/passive-test")}
           />
           <TestCard
             title="Active Test"
-            description="Press the button as soon as the object appears to measure your reaction time."
+            description="Try measure the time the object is exposed to you. Then press and hold the button for the same duration."
             icon="eye"
             onPress={() => router.push("/active-test")}
           />
