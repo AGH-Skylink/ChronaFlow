@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { StatusBar } from "expo-status-bar";
 import { saveTestResult } from "@/utils/storageUtils";
 import { ResultRow } from "@/components/ResultRow";
@@ -67,10 +67,11 @@ export default function RegularityTestScreen() {
     const sum = intervals.reduce((prev, curr) => prev + curr, 0);
     const avgInterval = sum / intervals.length / 1000; // in seconds
 
-    const squaredDiffSum = intervals.reduce(
-      (prev, curr) => prev + Math.pow(curr - avgInterval, 2),
-      0
-    );
+    const squaredDiffs = intervals.map((interval) => {
+      const diff = interval - avgInterval * 1000; // convert avgInterval to milliseconds
+      return diff * diff;
+    });
+    const squaredDiffSum = squaredDiffs.reduce((prev, curr) => prev + curr, 0);
     const stdDevInterval = Math.sqrt(squaredDiffSum / intervals.length) / 1000; // in seconds
 
     const relativeTapTimestamps = tapTimestamps.map(

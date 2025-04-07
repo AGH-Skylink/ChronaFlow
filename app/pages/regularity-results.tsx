@@ -210,12 +210,12 @@ export default function RegularityResultsScreen() {
 
               <ResultRow
                 label="Average interval:"
-                value={`${result.avgInterval.toFixed(2)} ms`}
+                value={`${result.avgInterval.toFixed(2)} s`}
               />
 
               <ResultRow
                 label="Standard deviation:"
-                value={`${result.stdDevInterval.toFixed(2)} ms`}
+                value={`${result.stdDevInterval.toFixed(2)} s`}
               />
 
               <NotesEditor
