@@ -22,6 +22,7 @@ import {
   DeleteButton,
   ResultRow,
 } from "../../components/TestResultComponents";
+import { NotesEditor } from "@/components/NotesEditor";
 
 type TestResult = {
   avgInterval: number;
@@ -29,6 +30,7 @@ type TestResult = {
   accuracy: number;
   date: string;
   tapTimestamps: number[];
+  notes?: string;
 };
 
 const STORAGE_KEY = "regularityTestResults";
@@ -38,7 +40,7 @@ export const exportRegularityResults = async () => {
   await exportResults({
     storageKey: STORAGE_KEY,
     csvHeader:
-      "Day,Time,Average Interval (ms),Standard Deviation (ms)," +
+      "Day,Time,Average Interval (ms),Standard Deviation (ms),Notes," +
       Array.from({ length: 25 }, (_, i) => `Timestamp${i + 1}`).join(",") +
       "\n",
     formatRow: (result: TestResult) => {
@@ -46,10 +48,11 @@ export const exportRegularityResults = async () => {
       const time = new Date(result.date).toLocaleTimeString();
       const avgInterval = result.avgInterval.toFixed(2);
       const stdDev = result.stdDevInterval.toFixed(2);
+      const notes = result.notes || "";
       const timestamps = Array.from({ length: 25 }, (_, i) =>
         result.tapTimestamps[i] !== undefined ? result.tapTimestamps[i] : ""
       );
-      return `${date},${time},${avgInterval},${stdDev},${timestamps.join(
+      return `${date},${time},${avgInterval},${stdDev},"${notes}",${timestamps.join(
         ","
       )}\n`;
     },
@@ -67,6 +70,7 @@ export default function RegularityResultsScreen() {
   const router = useRouter();
   const [results, setResults] = useState<TestResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
   useEffect(() => {
     loadResults();
@@ -151,6 +155,41 @@ export default function RegularityResultsScreen() {
     );
   };
 
+  const startEditingNote = (date: string) => {
+    setEditingNoteId(date); // Use date as ID
+  };
+
+  const saveNote = async (date: string, noteText: string) => {
+    try {
+      const resultsJson = await AsyncStorage.getItem(STORAGE_KEY);
+      if (resultsJson) {
+        const parsedResults = JSON.parse(resultsJson);
+        const updatedResults = parsedResults.map((result: TestResult) =>
+          result.date === date ? { ...result, notes: noteText } : result
+        );
+
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedResults));
+
+        // Update local state
+        setResults(
+          results.map((result) =>
+            result.date === date ? { ...result, notes: noteText } : result
+          )
+        );
+
+        setEditingNoteId(null);
+        console.log("Note saved successfully");
+      }
+    } catch (error) {
+      console.error("Error saving note:", error);
+      Alert.alert("Error", "Failed to save note. Please try again.");
+    }
+  };
+
+  const cancelEditingNote = () => {
+    setEditingNoteId(null);
+  };
+
   return (
     <View style={styles.container}>
       {loading ? (
@@ -181,6 +220,28 @@ export default function RegularityResultsScreen() {
                 label="Standard deviation:"
                 value={`${result.stdDevInterval.toFixed(2)} ms`}
               />
+
+              {/* Show notes editor if editing or if notes exist */}
+              {(editingNoteId === result.date ||
+                (result.notes && result.notes.trim() !== "")) && (
+                <NotesEditor
+                  notes={result.notes}
+                  isEditing={editingNoteId === result.date}
+                  onEditStart={() => startEditingNote(result.date)}
+                  onSave={(noteText) => saveNote(result.date, noteText)}
+                  onCancel={cancelEditingNote}
+                />
+              )}
+
+              {/* Add notes button if no notes exist and not editing */}
+              {!result.notes && editingNoteId !== result.date && (
+                <TouchableOpacity
+                  style={styles.addButton}
+                  onPress={() => startEditingNote(result.date)}
+                >
+                  <Text style={styles.addButtonText}>Add Notes</Text>
+                </TouchableOpacity>
+              )}
 
               <DeleteButton onPress={() => deleteResult(result.date)} />
             </View>
@@ -241,6 +302,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   accuracyText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#e0e0e0",
+  },
+  addButton: {
+    marginTop: 12,
+    backgroundColor: "#1e40af",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignSelf: "flex-start",
+  },
+  addButtonText: {
     fontSize: 14,
     fontWeight: "600",
     color: "#e0e0e0",
