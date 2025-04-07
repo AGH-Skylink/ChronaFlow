@@ -62,8 +62,6 @@ export function ExtraOptionsMenu() {
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const pathname = usePathname();
 
-  const isActiveResults = pathname?.includes("active-results");
-
   const toggleMenu = () => {
     if (isMenuVisible) {
       Animated.timing(scaleAnim, {

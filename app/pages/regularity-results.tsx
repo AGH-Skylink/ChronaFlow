@@ -218,26 +218,13 @@ export default function RegularityResultsScreen() {
                 value={`${result.stdDevInterval.toFixed(2)} ms`}
               />
 
-              {(editingNoteId === result.date ||
-                (result.notes && result.notes.trim() !== "")) && (
-                <NotesEditor
-                  notes={result.notes}
-                  isEditing={editingNoteId === result.date}
-                  onEditStart={() => startEditingNote(result.date)}
-                  onSave={(noteText) => saveNote(result.date, noteText)}
-                  onCancel={cancelEditingNote}
-                />
-              )}
-
-              {!result.notes && editingNoteId !== result.date && (
-                <TouchableOpacity
-                  style={resultCardStyles.addButton}
-                  onPress={() => startEditingNote(result.date)}
-                >
-                  <Text style={resultCardStyles.addButtonText}>Add Notes</Text>
-                </TouchableOpacity>
-              )}
-
+              <NotesEditor
+                notes={result.notes}
+                isEditing={editingNoteId === result.date}
+                onEditStart={() => startEditingNote(result.date)}
+                onSave={(noteText) => saveNote(result.date, noteText)}
+                onCancel={cancelEditingNote}
+              />
               <DeleteButton onPress={() => deleteResult(result.date)} />
             </View>
           ))}
