@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  Alert,
-  TextInput,
-  TouchableOpacity,
-} from "react-native";
+import { ScrollView, View, Text, Alert } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -24,6 +16,7 @@ import {
   ResultRow,
 } from "../../components/TestResultComponents";
 import { NotesEditor } from "@/components/NotesEditor";
+import { resultCardStyles } from "@/constants/resultStyles";
 
 interface TestResult {
   id: string;
@@ -67,16 +60,13 @@ export default function ActiveResultsScreen() {
   useEffect(() => {
     loadResults();
 
-    // Register event listener for results cleared
     const listener = EventRegister.addEventListener(
       RESULTS_CLEARED_EVENT,
       () => {
-        // When results are cleared, update the UI by setting empty results
         setResults([]);
       }
     );
 
-    // Clean up listener when component unmounts
     return () => {
       EventRegister.removeEventListener(listener as string);
     };
@@ -89,7 +79,6 @@ export default function ActiveResultsScreen() {
 
       if (resultsJson) {
         const parsedResults = JSON.parse(resultsJson);
-        // Sort results by timestamp (newest first)
         const sortedResults = parsedResults.sort(
           (a: TestResult, b: TestResult) => b.timestamp - a.timestamp
         );
@@ -160,7 +149,6 @@ export default function ActiveResultsScreen() {
 
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedResults));
 
-        // Update local state
         setResults(
           results.map((result) =>
             result.id === id ? { ...result, notes: noteText } : result
@@ -181,7 +169,7 @@ export default function ActiveResultsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={resultCardStyles.container}>
       {loading ? (
         <LoadingState />
       ) : results.length === 0 ? (
@@ -192,14 +180,14 @@ export default function ActiveResultsScreen() {
         />
       ) : (
         <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollViewContent}
+          style={resultCardStyles.scrollView}
+          contentContainerStyle={resultCardStyles.scrollViewContent}
         >
           {results.map((result, index) => (
-            <View key={index} style={styles.resultCard}>
-              <View style={styles.resultHeader}>
-                <View style={styles.dateEmojiContainer}>
-                  <Text style={styles.resultDate}>
+            <View key={index} style={resultCardStyles.resultCard}>
+              <View style={resultCardStyles.resultHeader}>
+                <View style={resultCardStyles.dateEmojiContainer}>
+                  <Text style={resultCardStyles.resultDate}>
                     {formatDate(result.timestamp)}
                   </Text>
                 </View>
@@ -239,61 +227,3 @@ export default function ActiveResultsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollViewContent: {
-    padding: 16,
-  },
-  resultCard: {
-    backgroundColor: "#1f2937",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  resultHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#2d3748",
-  },
-  dateEmojiContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  emoji: {
-    fontSize: 22,
-    marginRight: 8,
-  },
-  resultDate: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#e0e0e0",
-  },
-  accuracyBadge: {
-    borderRadius: 20,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-  },
-  accuracyText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#e0e0e0",
-  },
-});

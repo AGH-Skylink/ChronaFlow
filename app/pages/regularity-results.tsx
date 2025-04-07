@@ -23,11 +23,11 @@ import {
   ResultRow,
 } from "../../components/TestResultComponents";
 import { NotesEditor } from "@/components/NotesEditor";
+import { resultCardStyles } from "@/constants/resultStyles";
 
 type TestResult = {
   avgInterval: number;
   stdDevInterval: number;
-  accuracy: number;
   date: string;
   tapTimestamps: number[];
   notes?: string;
@@ -75,16 +75,13 @@ export default function RegularityResultsScreen() {
   useEffect(() => {
     loadResults();
 
-    // Register event listener for results cleared
     const listener = EventRegister.addEventListener(
       RESULTS_CLEARED_EVENT,
       () => {
-        // When results are cleared, update the UI by setting empty results
         setResults([]);
       }
     );
 
-    // Clean up listener when component unmounts
     return () => {
       EventRegister.removeEventListener(listener as string);
     };
@@ -97,7 +94,6 @@ export default function RegularityResultsScreen() {
 
       if (resultsJson) {
         const parsedResults = JSON.parse(resultsJson);
-        // Sort results by date (newest first)
         const sortedResults = parsedResults.sort(
           (a: TestResult, b: TestResult) =>
             new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -156,7 +152,7 @@ export default function RegularityResultsScreen() {
   };
 
   const startEditingNote = (date: string) => {
-    setEditingNoteId(date); // Use date as ID
+    setEditingNoteId(date);
   };
 
   const saveNote = async (date: string, noteText: string) => {
@@ -170,7 +166,6 @@ export default function RegularityResultsScreen() {
 
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedResults));
 
-        // Update local state
         setResults(
           results.map((result) =>
             result.date === date ? { ...result, notes: noteText } : result
@@ -191,7 +186,7 @@ export default function RegularityResultsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={resultCardStyles.container}>
       {loading ? (
         <LoadingState />
       ) : results.length === 0 ? (
@@ -202,13 +197,15 @@ export default function RegularityResultsScreen() {
         />
       ) : (
         <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollViewContent}
+          style={resultCardStyles.scrollView}
+          contentContainerStyle={resultCardStyles.scrollViewContent}
         >
           {results.map((result, index) => (
-            <View key={index} style={styles.resultCard}>
-              <View style={styles.resultHeader}>
-                <Text style={styles.resultDate}>{formatDate(result.date)}</Text>
+            <View key={index} style={resultCardStyles.resultCard}>
+              <View style={resultCardStyles.resultHeader}>
+                <Text style={resultCardStyles.resultDate}>
+                  {formatDate(result.date)}
+                </Text>
               </View>
 
               <ResultRow
@@ -221,7 +218,6 @@ export default function RegularityResultsScreen() {
                 value={`${result.stdDevInterval.toFixed(2)} ms`}
               />
 
-              {/* Show notes editor if editing or if notes exist */}
               {(editingNoteId === result.date ||
                 (result.notes && result.notes.trim() !== "")) && (
                 <NotesEditor
@@ -233,13 +229,12 @@ export default function RegularityResultsScreen() {
                 />
               )}
 
-              {/* Add notes button if no notes exist and not editing */}
               {!result.notes && editingNoteId !== result.date && (
                 <TouchableOpacity
-                  style={styles.addButton}
+                  style={resultCardStyles.addButton}
                   onPress={() => startEditingNote(result.date)}
                 >
-                  <Text style={styles.addButtonText}>Add Notes</Text>
+                  <Text style={resultCardStyles.addButtonText}>Add Notes</Text>
                 </TouchableOpacity>
               )}
 
@@ -252,71 +247,3 @@ export default function RegularityResultsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollViewContent: {
-    padding: 16,
-  },
-  resultCard: {
-    backgroundColor: "#1f2937",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  resultHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#2d3748",
-  },
-  resultDate: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#e0e0e0",
-  },
-  headerRightContent: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  accuracyBadge: {
-    backgroundColor: "#1e40af",
-    borderRadius: 20,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-  },
-  accuracyText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#e0e0e0",
-  },
-  addButton: {
-    marginTop: 12,
-    backgroundColor: "#1e40af",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    alignSelf: "flex-start",
-  },
-  addButtonText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#e0e0e0",
-  },
-});
