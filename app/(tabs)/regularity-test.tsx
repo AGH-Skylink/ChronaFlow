@@ -64,13 +64,15 @@ export default function RegularityTestScreen() {
     );
     const stdDevInterval = Math.sqrt(squaredDiffSum / intervals.length) / 1000; // in seconds
 
-    const targetInterval = 1000; // 1 second in ms
-
+    const relativeTapTimestamps = tapTimestamps.map(
+      (t) => t - tapTimestamps[0]
+    );
     const resultData = {
       id: Date.now().toString(),
       avgInterval,
       stdDevInterval,
       date: new Date().toISOString(),
+      tapTimestamps: relativeTapTimestamps, // in milliseconds
     };
 
     setResults(resultData);
