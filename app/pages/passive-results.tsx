@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  Alert,
-  TextInput,
-  TouchableOpacity,
-} from "react-native";
+import { ScrollView, View, Text, Alert } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -24,6 +16,7 @@ import {
   ResultRow,
 } from "../../components/TestResultComponents";
 import { NotesEditor } from "@/components/NotesEditor";
+import { resultCardStyles } from "@/constants/resultStyles";
 
 interface TestResult {
   id: string;
@@ -67,16 +60,13 @@ export default function PassiveResultsScreen() {
   useEffect(() => {
     loadResults();
 
-    // Register event listener for results cleared
     const listener = EventRegister.addEventListener(
       RESULTS_CLEARED_EVENT,
       () => {
-        // When results are cleared, update the UI by setting empty results
         setResults([]);
       }
     );
 
-    // Clean up listener when component unmounts
     return () => {
       EventRegister.removeEventListener(listener as string);
     };
@@ -181,7 +171,7 @@ export default function PassiveResultsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={resultCardStyles.container}>
       {loading ? (
         <LoadingState />
       ) : results.length === 0 ? (
@@ -192,14 +182,14 @@ export default function PassiveResultsScreen() {
         />
       ) : (
         <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollViewContent}
+          style={resultCardStyles.scrollView}
+          contentContainerStyle={resultCardStyles.scrollViewContent}
         >
           {results.map((result, index) => (
-            <View key={index} style={styles.resultCard}>
-              <View style={styles.resultHeader}>
-                <View style={styles.dateEmojiContainer}>
-                  <Text style={styles.resultDate}>
+            <View key={index} style={resultCardStyles.resultCard}>
+              <View style={resultCardStyles.resultHeader}>
+                <View style={resultCardStyles.dateEmojiContainer}>
+                  <Text style={resultCardStyles.resultDate}>
                     {formatDate(result.timestamp)}
                   </Text>
                 </View>
@@ -222,27 +212,13 @@ export default function PassiveResultsScreen() {
                 )} ms`}
               />
 
-              {/* Show notes editor only if notes exist or if editing */}
-              {(editingNoteId === result.id ||
-                (result.notes && result.notes.trim() !== "")) && (
-                <NotesEditor
-                  notes={result.notes}
-                  isEditing={editingNoteId === result.id}
-                  onEditStart={() => startEditingNote(result.id)}
-                  onSave={(noteText) => saveNote(result.id, noteText)}
-                  onCancel={cancelEditingNote}
-                />
-              )}
-
-              {/* Add notes button if no notes exist and not editing */}
-              {!result.notes && editingNoteId !== result.id && (
-                <TouchableOpacity
-                  style={styles.addButton}
-                  onPress={() => startEditingNote(result.id)}
-                >
-                  <Text style={styles.addButtonText}>Add Notes</Text>
-                </TouchableOpacity>
-              )}
+              <NotesEditor
+                notes={result.notes}
+                isEditing={editingNoteId === result.id}
+                onEditStart={() => startEditingNote(result.id)}
+                onSave={(noteText) => saveNote(result.id, noteText)}
+                onCancel={cancelEditingNote}
+              />
 
               <DeleteButton onPress={() => deleteResult(result.id)} />
             </View>
@@ -253,74 +229,3 @@ export default function PassiveResultsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollViewContent: {
-    padding: 16,
-  },
-  resultCard: {
-    backgroundColor: "#1f2937",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  resultHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#2d3748",
-  },
-  dateEmojiContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  emoji: {
-    fontSize: 22,
-    marginRight: 8,
-  },
-  resultDate: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#e0e0e0",
-  },
-  accuracyBadge: {
-    borderRadius: 20,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-  },
-  accuracyText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#e0e0e0",
-  },
-  addButton: {
-    marginTop: 12,
-    backgroundColor: "#3b82f6",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    alignSelf: "flex-start",
-  },
-  addButtonText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#e0e0e0",
-  },
-});

@@ -18,7 +18,37 @@ import {
   exportRegularityResults,
   clearRegularityResults,
 } from "@/app/pages/regularity-results";
+import {
+  exportPassiveResults,
+  clearPassiveResults,
+} from "@/app/pages/passive-results";
 import { usePathname } from "expo-router";
+
+function getExportFunction(pathname: string | undefined) {
+  if (pathname?.includes("active-results")) {
+    return exportActiveResults;
+  }
+  if (pathname?.includes("passive-results")) {
+    return exportPassiveResults;
+  }
+  if (pathname?.includes("regularity-results")) {
+    return exportRegularityResults;
+  }
+  return null;
+}
+
+function getClearFunction(pathname: string | undefined) {
+  if (pathname?.includes("active-results")) {
+    return clearActiveResults;
+  }
+  if (pathname?.includes("passive-results")) {
+    return clearPassiveResults;
+  }
+  if (pathname?.includes("regularity-results")) {
+    return clearRegularityResults;
+  }
+  return null;
+}
 
 export function ExtraOptionsMenu() {
   const colorScheme = useColorScheme();
@@ -52,20 +82,17 @@ export function ExtraOptionsMenu() {
   };
 
   const handleExportPress = () => {
-    toggleMenu();
-    if (isActiveResults) {
-      exportActiveResults();
-    } else {
-      exportRegularityResults();
+    const exportFunction = getExportFunction(pathname);
+    if (exportFunction) {
+      exportFunction();
     }
   };
 
   const handleClearPress = () => {
     toggleMenu();
-    if (isActiveResults) {
-      clearActiveResults();
-    } else {
-      clearRegularityResults();
+    const clearFunction = getClearFunction(pathname);
+    if (clearFunction) {
+      clearFunction();
     }
   };
 
