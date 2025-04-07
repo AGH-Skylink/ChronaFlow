@@ -43,6 +43,10 @@ export default function PassiveTestScreen() {
     setIsCountdownActive(true);
   };
 
+  const handleCountdownComplete = () => {
+    setIsCountdownActive(false);
+  };
+
   const handleSlideValueChange = useCallback((value: number) => {
     setSliderValue(value);
   }, []);
@@ -70,10 +74,6 @@ export default function PassiveTestScreen() {
       return () => clearTimeout(timer);
     }
   }, [phase, isCountdownActive, testStarted]);
-
-  const handleCountdownComplete = () => {
-    setIsCountdownActive(false);
-  };
 
   const handleCalculateResults = () => {
     const result: TestResult = {
