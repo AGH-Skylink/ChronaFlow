@@ -31,7 +31,7 @@ View an object for a random duration, then actively reproduce that same duration
 ### Setup Instructions
 1. Clone the repository:
    ```
-   git clone https://github.com/kapiw04/chronaflow.git
+   git clone https://github.com/AGH-Skylink/chronaflow.git
    cd chronaflow
    ```
 
