@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, ScrollView, View, Text, Alert } from "react-native";
+import {
+  StyleSheet,
+  ScrollView,
+  View,
+  Text,
+  Alert,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -15,12 +23,14 @@ import {
   DeleteButton,
   ResultRow,
 } from "../../components/TestResultComponents";
+import { NotesEditor } from "@/components/NotesEditor";
 
 interface TestResult {
   id: string;
   timestamp: number;
   targetExposure: number;
   userInput: number;
+  notes?: string;
 }
 
 // Storage key and event name constants
@@ -30,11 +40,13 @@ const RESULTS_CLEARED_EVENT = "passiveResultsCleared";
 export const exportPassiveResults = async () => {
   await exportResults({
     storageKey: STORAGE_KEY,
-    csvHeader: "Day,Time,Target Duration (ms),Your Duration (ms))\n",
+    csvHeader: "Day,Time,Target Duration (ms),Your Duration (ms),Notes\n",
     formatRow: (result: TestResult) => {
       const date = new Date(result.timestamp).toLocaleString();
       const [day, time] = date.split(", ");
-      return `"${day}","${time}",${result.targetExposure},${result.userInput}\n`;
+      return `"${day}","${time}",${result.targetExposure},${
+        result.userInput
+      },"${result.notes || ""}"\n`;
     },
     fileNamePrefix: "passive_test_results",
     dialogTitle: "Save Passive Test Results",
@@ -50,6 +62,7 @@ export default function PassiveResultsScreen() {
   const router = useRouter();
   const [results, setResults] = useState<TestResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
   useEffect(() => {
     loadResults();
@@ -132,6 +145,41 @@ export default function PassiveResultsScreen() {
     );
   };
 
+  const startEditingNote = (id: string) => {
+    setEditingNoteId(id);
+  };
+
+  const saveNote = async (id: string, noteText: string) => {
+    try {
+      const resultsJson = await AsyncStorage.getItem(STORAGE_KEY);
+      if (resultsJson) {
+        const parsedResults = JSON.parse(resultsJson);
+        const updatedResults = parsedResults.map((result: TestResult) =>
+          result.id === id ? { ...result, notes: noteText } : result
+        );
+
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedResults));
+
+        // Update local state
+        setResults(
+          results.map((result) =>
+            result.id === id ? { ...result, notes: noteText } : result
+          )
+        );
+
+        setEditingNoteId(null);
+        console.log("Note saved successfully");
+      }
+    } catch (error) {
+      console.error("Error saving note:", error);
+      Alert.alert("Error", "Failed to save note. Please try again.");
+    }
+  };
+
+  const cancelEditingNote = () => {
+    setEditingNoteId(null);
+  };
+
   return (
     <View style={styles.container}>
       {loading ? (
@@ -173,6 +221,28 @@ export default function PassiveResultsScreen() {
                   result.userInput - result.targetExposure
                 )} ms`}
               />
+
+              {/* Show notes editor only if notes exist or if editing */}
+              {(editingNoteId === result.id ||
+                (result.notes && result.notes.trim() !== "")) && (
+                <NotesEditor
+                  notes={result.notes}
+                  isEditing={editingNoteId === result.id}
+                  onEditStart={() => startEditingNote(result.id)}
+                  onSave={(noteText) => saveNote(result.id, noteText)}
+                  onCancel={cancelEditingNote}
+                />
+              )}
+
+              {/* Add notes button if no notes exist and not editing */}
+              {!result.notes && editingNoteId !== result.id && (
+                <TouchableOpacity
+                  style={styles.addButton}
+                  onPress={() => startEditingNote(result.id)}
+                >
+                  <Text style={styles.addButtonText}>Add Notes</Text>
+                </TouchableOpacity>
+              )}
 
               <DeleteButton onPress={() => deleteResult(result.id)} />
             </View>
@@ -236,6 +306,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   accuracyText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#e0e0e0",
+  },
+  addButton: {
+    marginTop: 12,
+    backgroundColor: "#3b82f6",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignSelf: "flex-start",
+  },
+  addButtonText: {
     fontSize: 14,
     fontWeight: "600",
     color: "#e0e0e0",

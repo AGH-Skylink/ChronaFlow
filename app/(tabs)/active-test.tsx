@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
+} from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { ResultRow } from "../../components/ResultRow";
 import { saveTestResult } from "@/utils/storageUtils";
@@ -13,6 +22,7 @@ interface TestResult {
   timestamp: number;
   targetDuration: number;
   userDuration: number;
+  notes?: string;
 }
 
 export default function ActiveTest() {
@@ -66,6 +76,7 @@ export default function ActiveTest() {
         timestamp: Date.now(),
         targetDuration: targetExposure,
         userDuration: duration,
+        notes: "", // Keep empty notes field for later editing
       };
       saveTestResult("activeTestResults", testResult);
     }
@@ -81,93 +92,111 @@ export default function ActiveTest() {
   };
 
   return (
-    <View style={TestStyles.container}>
-      {!testStarted ? (
-        <View style={TestStyles.startContainer}>
-          <Text style={TestStyles.header}>Active Test</Text>
-          <Text style={[TestStyles.instructions, { marginVertical: 20 }]}>
-            You will see an emoji for a certain amount of time. Then you'll need
-            to hold a button for the same duration.
-          </Text>
-          <TouchableOpacity
-            style={TestStyles.primaryButton}
-            onPress={handleStart}
-          >
-            <Text style={TestStyles.primaryButtonText}>Tap to Begin</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <>
-          {isCountdownActive && (
-            <Countdown onComplete={handleCountdownComplete} />
-          )}
-
-          <View style={TestStyles.headerContainer}>
-            <Text style={TestStyles.header}>Active Test</Text>
-            {phase === "exposure" && !isCountdownActive && (
-              <Text style={TestStyles.instructions}>
-                Try to remember the exposure time.
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={TestStyles.container}>
+          {!testStarted ? (
+            <View style={TestStyles.startContainer}>
+              <Text style={TestStyles.header}>Active Test</Text>
+              <Text style={[TestStyles.instructions, { marginVertical: 20 }]}>
+                You will see an emoji for a certain amount of time. Then you'll
+                need to hold a button for the same duration.
               </Text>
-            )}
-          </View>
+              <TouchableOpacity
+                style={TestStyles.primaryButton}
+                onPress={handleStart}
+              >
+                <Text style={TestStyles.primaryButtonText}>Tap to Begin</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <>
+              {isCountdownActive && (
+                <Countdown onComplete={handleCountdownComplete} />
+              )}
 
-          <View
-            style={[
-              TestStyles.testArea,
-              phase === "result"
-                ? TestStyles.resultsContainer
-                : TestStyles.testContainer,
-            ]}
-          >
-            {phase === "exposure" && !isCountdownActive && (
-              <View style={TestStyles.testContainer}>
-                <Text style={TestStyles.testText}>Watch the exposure...</Text>
-                <Text style={TestStyles.emoji}>{currentEmoji}</Text>
+              <View style={TestStyles.headerContainer}>
+                <Text style={TestStyles.header}>Active Test</Text>
+                {phase === "exposure" && !isCountdownActive && (
+                  <Text style={TestStyles.instructions}>
+                    Try to remember the exposure time.
+                  </Text>
+                )}
               </View>
-            )}
-            {phase === "reproduction" && (
-              <View style={TestStyles.testContainer}>
-                <Text style={TestStyles.testText}>
-                  Replicate the exposure duration by holding the button.
-                </Text>
-                <TouchableOpacity
-                  style={TestStyles.resetButton}
-                  onPressIn={handlePressIn}
-                  onPressOut={handlePressOut}
-                >
-                  <Text style={TestStyles.resetButtonText}>Hold</Text>
-                </TouchableOpacity>
+
+              <View
+                style={[
+                  TestStyles.testArea,
+                  phase === "result"
+                    ? TestStyles.resultsContainer
+                    : TestStyles.testContainer,
+                ]}
+              >
+                {phase === "exposure" && !isCountdownActive && (
+                  <View style={TestStyles.testContainer}>
+                    <Text style={TestStyles.testText}>
+                      Watch the exposure...
+                    </Text>
+                    <Text style={TestStyles.emoji}>{currentEmoji}</Text>
+                  </View>
+                )}
+                {phase === "reproduction" && (
+                  <View style={TestStyles.testContainer}>
+                    <Text style={TestStyles.testText}>
+                      Replicate the exposure duration by holding the button.
+                    </Text>
+                    <TouchableOpacity
+                      style={TestStyles.resetButton}
+                      onPressIn={handlePressIn}
+                      onPressOut={handlePressOut}
+                    >
+                      <Text style={TestStyles.resetButtonText}>Hold</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                {phase === "result" && (
+                  <ScrollView
+                    style={{ flex: 1, width: "100%" }}
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={true}
+                  >
+                    <View style={TestStyles.resultsContainer}>
+                      <Text style={TestStyles.title}>Test Completed!</Text>
+
+                      <View style={TestStyles.resultsCard}>
+                        <ResultRow
+                          label="Target Duration"
+                          value={`${targetExposure} ms`}
+                        />
+                        <View style={TestStyles.divider} />
+
+                        <ResultRow
+                          label="Your Duration"
+                          value={`${holdDuration} ms`}
+                        />
+                      </View>
+
+                      <TouchableOpacity
+                        style={TestStyles.resetButton}
+                        onPress={resetTest}
+                      >
+                        <Text style={TestStyles.resetButtonText}>
+                          Try Again
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </ScrollView>
+                )}
               </View>
-            )}
-            {phase === "result" && (
-              <View style={TestStyles.resultsContainer}>
-                <Text style={TestStyles.title}>Test Completed!</Text>
-
-                <View style={TestStyles.resultsCard}>
-                  <ResultRow
-                    label="Target Duration"
-                    value={`${targetExposure} ms`}
-                  />
-                  <View style={TestStyles.divider} />
-
-                  <ResultRow
-                    label="Your Duration"
-                    value={`${holdDuration} ms`}
-                  />
-                </View>
-
-                <TouchableOpacity
-                  style={TestStyles.resetButton}
-                  onPress={resetTest}
-                >
-                  <Text style={TestStyles.resetButtonText}>Try Again</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-        </>
-      )}
-      <StatusBar style="light" />
-    </View>
+            </>
+          )}
+          <StatusBar style="light" />
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
