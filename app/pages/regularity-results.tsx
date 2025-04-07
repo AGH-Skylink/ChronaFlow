@@ -28,6 +28,7 @@ type TestResult = {
   stdDevInterval: number;
   accuracy: number;
   date: string;
+  tapTimestamps: number[];
 };
 
 const STORAGE_KEY = "regularityTestResults";
@@ -36,12 +37,21 @@ const RESULTS_CLEARED_EVENT = "resultsCleared";
 export const exportRegularityResults = async () => {
   await exportResults({
     storageKey: STORAGE_KEY,
-    csvHeader: "Day,Time,Average Interval (ms),Standard Deviation (ms)\n",
+    csvHeader:
+      "Day,Time,Average Interval (ms),Standard Deviation (ms)," +
+      Array.from({ length: 25 }, (_, i) => `Timestamp${i + 1}`).join(",") +
+      "\n",
     formatRow: (result: TestResult) => {
-      const date = new Date(result.date).toLocaleString();
+      const date = new Date(result.date).toLocaleDateString();
+      const time = new Date(result.date).toLocaleTimeString();
       const avgInterval = result.avgInterval.toFixed(2);
       const stdDev = result.stdDevInterval.toFixed(2);
-      return `${date},${avgInterval},${stdDev}\n`;
+      const timestamps = Array.from({ length: 25 }, (_, i) =>
+        result.tapTimestamps[i] !== undefined ? result.tapTimestamps[i] : ""
+      );
+      return `${date},${time},${avgInterval},${stdDev},${timestamps.join(
+        ","
+      )}\n`;
     },
     fileNamePrefix: "regularity_test_results",
     dialogTitle: "Save Regularity Test Results",
