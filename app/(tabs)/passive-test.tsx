@@ -17,6 +17,7 @@ import { saveTestResult } from "@/utils/storageUtils";
 import { randomEmoji, randomTime } from "@/utils/test-utils";
 import { Countdown } from "@/components/Countdown";
 import Slider from "@react-native-community/slider";
+import { useFocusEffect } from "@react-navigation/native";
 
 interface TestResult {
   id: string;
@@ -96,6 +97,16 @@ export default function PassiveTestScreen() {
     setSliderValue(1000);
     setCurrentEmoji(randomEmoji());
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        if (phase === "result") {
+          resetTest();
+        }
+      };
+    }, [phase])
+  );
 
   return (
     <KeyboardAvoidingView
