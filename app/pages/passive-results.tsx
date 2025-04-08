@@ -178,7 +178,7 @@ export default function PassiveResultsScreen() {
         <EmptyState
           testName="passive test"
           routePath="/(tabs)/passive-test"
-          onTakeTest={() => router.push("/(tabs)/passive-test")}
+          onTakeTest={() => router.push("/pages/passive-test")}
         />
       ) : (
         <ScrollView
