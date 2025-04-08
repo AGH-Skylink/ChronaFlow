@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
+import { ScrollView, View, Text, Alert } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -36,12 +29,16 @@ type TestResult = {
 const STORAGE_KEY = "regularityTestResults";
 const RESULTS_CLEARED_EVENT = "resultsCleared";
 
+const TAP_COUNT = 10;
+
 export const exportRegularityResults = async () => {
   await exportResults({
     storageKey: STORAGE_KEY,
     csvHeader:
       "Day,Time,Average Interval (ms),Standard Deviation (ms),Notes," +
-      Array.from({ length: 25 }, (_, i) => `Timestamp${i + 1}`).join(",") +
+      Array.from({ length: TAP_COUNT }, (_, i) => `Timestamp${i + 1}`).join(
+        ","
+      ) +
       "\n",
     formatRow: (result: TestResult) => {
       const date = new Date(result.date).toLocaleDateString();
@@ -49,7 +46,7 @@ export const exportRegularityResults = async () => {
       const avgInterval = result.avgInterval.toFixed(2);
       const stdDev = result.stdDevInterval.toFixed(2);
       const notes = result.notes || "";
-      const timestamps = Array.from({ length: 25 }, (_, i) =>
+      const timestamps = Array.from({ length: TAP_COUNT }, (_, i) =>
         result.tapTimestamps[i] !== undefined ? result.tapTimestamps[i] : ""
       );
       return `${date},${time},${avgInterval},${stdDev},"${notes}",${timestamps.join(
