@@ -140,9 +140,12 @@ export const TestStyles = StyleSheet.create({
   },
   // Buttons
   primaryButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.background.primary,
+    borderWidth: 2,
+    borderColor: "#3d4852",
     paddingVertical: 8,
     paddingHorizontal: 12,
+    margin: 10,
     borderRadius: 12,
     width: "80%",
     alignItems: "center",

@@ -29,7 +29,7 @@ export default function TestsResultsScreen() {
           onPress={() => router.push("/pages/regularity-results")}
         />
         <TestCard
-          title="Passive Test"
+          title="Passive Test Results"
           description="View your history of passive exposure tests"
           icon="play-circle"
           onPress={() => router.push("/pages/passive-results")}

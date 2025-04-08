@@ -15,6 +15,7 @@ import { saveTestResult } from "@/utils/storageUtils";
 import { TestStyles } from "@/constants/TestStyles";
 import { randomEmoji, randomTime } from "@/utils/test-utils";
 import { Countdown } from "@/components/Countdown";
+import { useFocusEffect } from "@react-navigation/native";
 
 // Define the structure for a test result
 interface TestResult {
@@ -90,6 +91,16 @@ export default function ActiveTest() {
     setHoldStart(null);
     setHoldDuration(null);
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        if (phase === "result") {
+          resetTest();
+        }
+      };
+    }, [phase])
+  );
 
   return (
     <KeyboardAvoidingView
