@@ -29,7 +29,7 @@ type TestResult = {
 const STORAGE_KEY = "regularityTestResults";
 const RESULTS_CLEARED_EVENT = "resultsCleared";
 
-const TAP_COUNT = 10;
+const TAP_COUNT = 25;
 
 export const exportRegularityResults = async () => {
   await exportResults({
@@ -43,8 +43,8 @@ export const exportRegularityResults = async () => {
     formatRow: (result: TestResult) => {
       const date = new Date(result.date).toLocaleDateString();
       const time = new Date(result.date).toLocaleTimeString();
-      const avgInterval = result.avgInterval.toFixed(2);
-      const stdDev = result.stdDevInterval.toFixed(2);
+      const avgInterval = result.avgInterval.toFixed(3);
+      const stdDev = result.stdDevInterval.toFixed(3);
       const notes = result.notes || "";
       const timestamps = Array.from({ length: TAP_COUNT }, (_, i) =>
         result.tapTimestamps[i] !== undefined ? result.tapTimestamps[i] : ""
@@ -207,12 +207,12 @@ export default function RegularityResultsScreen() {
 
               <ResultRow
                 label="Average interval:"
-                value={`${result.avgInterval.toFixed(2)} s`}
+                value={`${result.avgInterval.toFixed(3)} s`}
               />
 
               <ResultRow
                 label="Standard deviation:"
-                value={`${result.stdDevInterval.toFixed(2)} s`}
+                value={`${result.stdDevInterval.toFixed(3)} s`}
               />
 
               <NotesEditor
