@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { saveTestResult } from "@/utils/storageUtils";
 import { ResultRow } from "@/components/ResultRow";
@@ -16,6 +16,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Countdown } from "@/components/Countdown";
+import { useFocusEffect } from "@react-navigation/native";
 
 const TAP_COUNT = 25;
 
@@ -103,6 +104,16 @@ export default function RegularityTestScreen() {
       stdDevInterval: 0,
     });
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        if (testCompleted) {
+          resetTest();
+        }
+      };
+    }, [testCompleted])
+  );
 
   return (
     <KeyboardAvoidingView
