@@ -7,11 +7,22 @@ type TestCardProps = {
   description: string;
   icon: React.ComponentProps<typeof FontAwesome>["name"];
   onPress: () => void;
+  highlight?: boolean; // Add this prop
 };
 
-export function TestCard({ title, description, icon, onPress }: TestCardProps) {
+export function TestCard({
+  title,
+  description,
+  icon,
+  onPress,
+  highlight = false,
+}: TestCardProps) {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={[styles.card, highlight && styles.highlightCard]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
       <View style={styles.iconContainer}>
         <FontAwesome name={icon} size={24} color="#60a5fa" />
       </View>
@@ -72,5 +83,10 @@ const styles = StyleSheet.create({
   },
   cardArrow: {
     marginLeft: 8,
+  },
+  highlightCard: {
+    borderColor: "#3498db",
+    borderWidth: 2,
+    backgroundColor: "rgba(52, 152, 219, 0.1)",
   },
 });

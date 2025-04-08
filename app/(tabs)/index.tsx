@@ -34,6 +34,14 @@ export default function HomeScreen() {
           </Text>
         </View>
 
+        <TestCard
+          title="Session Creator"
+          description="Create custom test sequences combining multiple test types."
+          icon="list-ul"
+          onPress={() => router.push("/(tabs)/session-creator")}
+          highlight={true}
+        />
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Available Tests</Text>
 
