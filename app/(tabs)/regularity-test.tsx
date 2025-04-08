@@ -17,7 +17,7 @@ import {
 } from "react-native";
 import { Countdown } from "@/components/Countdown";
 
-const TAP_COUNT = 10;
+const TAP_COUNT = 25;
 
 export default function RegularityTestScreen() {
   const [testStarted, setTestStarted] = useState(false);
@@ -158,13 +158,13 @@ export default function RegularityTestScreen() {
                       <ResultsCard>
                         <ResultRow
                           label="Average interval"
-                          value={`${results.avgInterval.toFixed(2)} s`}
+                          value={`${results.avgInterval.toFixed(3)} s`}
                         />
                         <View style={TestStyles.divider} />
 
                         <ResultRow
                           label="Standard Deviation"
-                          value={`${results.stdDevInterval.toFixed(2)} s`}
+                          value={`${results.stdDevInterval.toFixed(3)} s`}
                         />
                       </ResultsCard>
 
