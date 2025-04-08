@@ -35,31 +35,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="regularity-test"
-        options={{
-          title: "Regularity Test",
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="hand-o-up" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="passive-test"
-        options={{
-          title: "Passive Test",
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="play-circle" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="active-test"
-        options={{
-          title: "Active Test",
-          tabBarIcon: ({ color }) => <TabBarIcon name="eye" color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="tests-results"
         options={{
           title: "Tests Results",

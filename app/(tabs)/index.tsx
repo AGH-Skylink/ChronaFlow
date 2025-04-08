@@ -41,19 +41,19 @@ export default function HomeScreen() {
             title="Regularity Test"
             description="Test your ability to maintain a regular rhythm by tapping at 1-second intervals."
             icon="hand-o-up"
-            onPress={() => router.push("/regularity-test")}
+            onPress={() => router.push("/pages/regularity-test")}
           />
           <TestCard
             title="Passive Test"
             description="Try measure the time the object is exposed to you. Then using the slider, set the time you think it was exposed."
             icon="play-circle"
-            onPress={() => router.push("/passive-test")}
+            onPress={() => router.push("/pages/passive-test")}
           />
           <TestCard
             title="Active Test"
             description="Try measure the time the object is exposed to you. Then press and hold the button for the same duration."
             icon="eye"
-            onPress={() => router.push("/active-test")}
+            onPress={() => router.push("/pages/active-test")}
           />
         </View>
       </ScrollView>

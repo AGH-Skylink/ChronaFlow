@@ -190,7 +190,7 @@ export default function RegularityResultsScreen() {
         <EmptyState
           testName="regularity test"
           routePath="/regularity-test"
-          onTakeTest={() => router.push("/regularity-test")}
+          onTakeTest={() => router.push("/pages/regularity-test")}
         />
       ) : (
         <ScrollView

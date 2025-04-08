@@ -176,7 +176,7 @@ export default function ActiveResultsScreen() {
         <EmptyState
           testName="active test"
           routePath="/(tabs)/active-test"
-          onTakeTest={() => router.push("/(tabs)/active-test")}
+          onTakeTest={() => router.push("/pages/active-test")}
         />
       ) : (
         <ScrollView
