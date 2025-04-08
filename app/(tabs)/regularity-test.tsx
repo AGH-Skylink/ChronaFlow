@@ -17,6 +17,8 @@ import {
 } from "react-native";
 import { Countdown } from "@/components/Countdown";
 
+const TAP_COUNT = 10;
+
 export default function RegularityTestScreen() {
   const [testStarted, setTestStarted] = useState(false);
   const [isCountdownActive, setIsCountdownActive] = useState<boolean>(false);
@@ -45,7 +47,7 @@ export default function RegularityTestScreen() {
       const newCount = prevCount + 1;
       setTapTimestamps((prev) => [...prev, timestamp]);
 
-      if (newCount >= 25) {
+      if (newCount >= TAP_COUNT) {
         setTestCompleted(true);
       }
       return newCount;
@@ -83,7 +85,7 @@ export default function RegularityTestScreen() {
       stdDevInterval,
       date: new Date().toISOString(),
       tapTimestamps: relativeTapTimestamps, // in milliseconds
-      notes: "", // Keep empty notes field for later editing
+      notes: "",
     };
 
     setResults(resultData);
@@ -114,7 +116,7 @@ export default function RegularityTestScreen() {
               <Text style={TestStyles.header}>Regularity Test</Text>
               <Text style={[TestStyles.instructions, { marginVertical: 20 }]}>
                 Try to tap the screen at regular 1-second intervals. You will
-                need to complete 25 taps to finish the test.
+                need to complete {TAP_COUNT} taps to finish the test.
               </Text>
               <TouchableOpacity
                 style={TestStyles.primaryButton}
@@ -173,12 +175,14 @@ export default function RegularityTestScreen() {
               ) : (
                 <TouchableOpacity onPress={recordTap} activeOpacity={0.8}>
                   <View style={TestStyles.testContainer}>
-                    <Text style={TestStyles.testText}>{tapCount} / 25</Text>
+                    <Text style={TestStyles.testText}>
+                      {tapCount} / {TAP_COUNT}
+                    </Text>
                     <View style={TestStyles.progressContainer}>
                       <View
                         style={[
                           TestStyles.progressBar,
-                          { width: `${(tapCount / 25) * 100}%` },
+                          { width: `${(tapCount / TAP_COUNT) * 100}%` },
                         ]}
                       />
                     </View>
