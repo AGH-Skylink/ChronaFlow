@@ -26,7 +26,11 @@ interface TestResult {
   notes?: string;
 }
 
-export default function ActiveTest() {
+interface ActiveTestProps {
+  onComplete?: () => void;
+}
+
+export default function ActiveTest({ onComplete }: ActiveTestProps) {
   const [testStarted, setTestStarted] = useState<boolean>(false);
   const [isCountdownActive, setIsCountdownActive] = useState<boolean>(false);
   const [phase, setPhase] = useState<"exposure" | "reproduction" | "result">(
@@ -90,6 +94,15 @@ export default function ActiveTest() {
     setTargetExposure(0);
     setHoldStart(null);
     setHoldDuration(null);
+  };
+
+  const handleNextTest = () => {
+    if (onComplete) {
+      resetTest();
+      onComplete();
+    } else {
+      resetTest();
+    }
   };
 
   useFocusEffect(
@@ -193,10 +206,10 @@ export default function ActiveTest() {
 
                       <TouchableOpacity
                         style={TestStyles.resetButton}
-                        onPress={resetTest}
+                        onPress={onComplete ? handleNextTest : resetTest}
                       >
                         <Text style={TestStyles.resetButtonText}>
-                          Try Again
+                          {onComplete ? "Next Test" : "Try Again"}
                         </Text>
                       </TouchableOpacity>
                     </View>

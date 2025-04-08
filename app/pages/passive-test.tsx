@@ -26,7 +26,11 @@ interface TestResult {
   notes?: string;
 }
 
-export default function PassiveTestScreen() {
+interface PassiveTestProps {
+  onComplete?: () => void;
+}
+
+export default function PassiveTest({ onComplete }: PassiveTestProps) {
   const [testStarted, setTestStarted] = useState<boolean>(false);
   const [isCountdownActive, setIsCountdownActive] = useState<boolean>(false);
   const [phase, setPhase] = useState<"exposure" | "input" | "result">(
@@ -95,6 +99,15 @@ export default function PassiveTestScreen() {
     setTargetExposure(0);
     setSliderValue(1000);
     setCurrentEmoji(randomEmoji());
+  };
+
+  const handleNextTest = () => {
+    if (onComplete) {
+      resetTest();
+      onComplete();
+    } else {
+      resetTest();
+    }
   };
 
   useFocusEffect(
@@ -224,10 +237,10 @@ export default function PassiveTestScreen() {
 
                       <TouchableOpacity
                         style={TestStyles.resetButton}
-                        onPress={resetTest}
+                        onPress={onComplete ? handleNextTest : resetTest}
                       >
                         <Text style={TestStyles.resetButtonText}>
-                          Try Again
+                          {onComplete ? "Next Test" : "Try Again"}
                         </Text>
                       </TouchableOpacity>
                     </View>

@@ -94,7 +94,6 @@ export const typography = StyleSheet.create({
 export const layout = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
   },
   headerContainer: {
     paddingTop: 50,
@@ -102,10 +101,12 @@ export const layout = StyleSheet.create({
     alignItems: 'center',
   },
   card: {
-    backgroundColor: COLORS.background.secondary,
+    backgroundColor: "transparent",
+    borderWidth: 3,
+    borderColor: COLORS.border,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
+    margin: 16,
     ...shadow.small,
   },
   row: {
@@ -124,7 +125,9 @@ export const layout = StyleSheet.create({
 // Button styles
 export const buttons = StyleSheet.create({
   primary: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: COLORS.border,
     paddingVertical: 14,
     paddingHorizontal: 36,
     borderRadius: 8,
