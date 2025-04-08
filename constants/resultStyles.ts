@@ -42,14 +42,6 @@ export const resultCardStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  addButton: {
-    marginTop: 12,
-    backgroundColor: "#3b82f6",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    alignSelf: "flex-start",
-  },
   addButtonText: {
     fontSize: 14,
     fontWeight: "600",
