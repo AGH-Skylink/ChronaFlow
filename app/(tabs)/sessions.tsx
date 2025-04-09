@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   StyleSheet,
   ScrollView,
@@ -8,6 +8,8 @@ import {
   Alert,
   View as RNView,
   BackHandler,
+  Modal,
+  Animated,
 } from "react-native";
 import { Text, View } from "@/components/Themed";
 import { useRouter } from "expo-router";
@@ -17,6 +19,7 @@ import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { TestStyles } from "@/constants/TestStyles";
 import { COLORS, typography, layout, buttons } from "@/constants/Styles";
 import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function SessionCreator() {
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -24,6 +27,9 @@ export default function SessionCreator() {
   const [sessionName, setSessionName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const menuAnim = useRef(new Animated.Value(0)).current;
   const router = useRouter();
 
   useEffect(() => {
@@ -150,10 +156,15 @@ export default function SessionCreator() {
     loadSessions();
   };
 
-  const handleDeleteSession = async (sessionId: string) => {
+  const handleDeleteSession = async (
+    sessionId: string,
+    deleteResults: boolean = false
+  ) => {
     Alert.alert(
       "Delete Session",
-      "Are you sure you want to delete this session?",
+      deleteResults
+        ? "Are you sure you want to delete this session AND all associated test results? This action cannot be undone."
+        : "Are you sure you want to delete this session? The test results will be kept.",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -161,11 +172,84 @@ export default function SessionCreator() {
           style: "destructive",
           onPress: async () => {
             await deleteSession(sessionId);
+
+            if (deleteResults) {
+              await deleteSessionResults(sessionId);
+            } else {
+              await nullifySessionResults(sessionId);
+            }
+
             loadSessions();
           },
         },
       ]
     );
+  };
+
+  const deleteSessionResults = async (sessionId: string) => {
+    try {
+      await deleteTestResultsForSession("activeTestResults", sessionId);
+      await deleteTestResultsForSession("passiveTestResults", sessionId);
+      await deleteTestResultsForSession("regularityTestResults", sessionId);
+    } catch (error) {
+      console.error("Error deleting session results:", error);
+      Alert.alert("Error", "Failed to delete all test results");
+    }
+  };
+
+  const deleteTestResultsForSession = async (
+    storageKey: string,
+    sessionId: string
+  ) => {
+    const resultsJson = await AsyncStorage.getItem(storageKey);
+    if (resultsJson) {
+      const results = JSON.parse(resultsJson);
+      const filteredResults = results.filter(
+        (result: any) => result.sessionId !== sessionId
+      );
+      await AsyncStorage.setItem(storageKey, JSON.stringify(filteredResults));
+    }
+  };
+
+  const nullifySessionResults = async (sessionId: string) => {
+    try {
+      const resultsJson = await AsyncStorage.getItem("activeTestResults");
+      if (resultsJson) {
+        const results = JSON.parse(resultsJson);
+        const updatedResults = results.map((result: any) =>
+          result.sessionId === sessionId
+            ? { ...result, sessionId: null }
+            : result
+        );
+        await AsyncStorage.setItem(
+          "activeTestResults",
+          JSON.stringify(updatedResults)
+        );
+      }
+    } catch (error) {
+      console.error("Error nullifying session results:", error);
+    }
+  };
+
+  const showSessionMenu = (sessionId: string) => {
+    setActiveSessionId(sessionId);
+    setMenuVisible(true);
+    Animated.timing(menuAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const hideSessionMenu = () => {
+    Animated.timing(menuAnim, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
+      setMenuVisible(false);
+      setActiveSessionId(null);
+    });
   };
 
   const handlePlaySession = (session: Session) => {
@@ -204,7 +288,7 @@ export default function SessionCreator() {
 
   const SessionListHeader = () => (
     <View style={styles.header}>
-      <Text style={typography.header}>Session Creator</Text>
+      <Text style={typography.header}>Sessions</Text>
     </View>
   );
 
@@ -270,6 +354,66 @@ export default function SessionCreator() {
       }
       return () => {};
     }, [isCreating, handleBackPress])
+  );
+
+  // Session Menu component
+  const SessionMenu = () => (
+    <Modal
+      visible={menuVisible}
+      transparent={true}
+      animationType="none"
+      onRequestClose={hideSessionMenu}
+    >
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={hideSessionMenu}
+      >
+        <Animated.View
+          style={[
+            styles.menuContainer,
+            {
+              opacity: menuAnim,
+              transform: [{ scale: menuAnim }],
+            },
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              hideSessionMenu();
+              if (activeSessionId) handleDeleteSession(activeSessionId, false);
+            }}
+          >
+            <FontAwesome
+              name="trash"
+              size={16}
+              color="#f87171"
+              style={styles.menuIcon}
+            />
+            <Text style={styles.menuItemText}>Delete Session Only</Text>
+          </TouchableOpacity>
+
+          <View style={styles.menuDivider} />
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              hideSessionMenu();
+              if (activeSessionId) handleDeleteSession(activeSessionId, true);
+            }}
+          >
+            <FontAwesome
+              name="trash"
+              size={16}
+              color="#f87171"
+              style={styles.menuIcon}
+            />
+            <Text style={styles.menuItemText}>Delete Session and Results</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </TouchableOpacity>
+    </Modal>
   );
 
   if (isCreating) {
@@ -522,15 +666,17 @@ export default function SessionCreator() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => handleDeleteSession(item.id)}
+                style={styles.menuButton}
+                onPress={() => showSessionMenu(item.id)}
               >
-                <Ionicons name="trash-outline" size={20} color="#ff6b6b" />
+                <Ionicons name="ellipsis-vertical" size={20} color="#a0aec0" />
               </TouchableOpacity>
             </View>
           </View>
         )}
       />
+
+      <SessionMenu />
     </View>
   );
 }
@@ -595,9 +741,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "transparent",
-  },
-  deleteButton: {
-    padding: 8,
   },
   formGroup: {
     marginVertical: 24,
@@ -696,5 +839,43 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "100%",
     paddingBottom: 20,
+  },
+  menuButton: {
+    padding: 8,
+    borderRadius: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  menuContainer: {
+    backgroundColor: "#1f2937",
+    borderRadius: 8,
+    width: 250,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#374151",
+    position: "absolute",
+    top: "40%",
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  menuItemText: {
+    color: "#f87171",
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  menuIcon: {
+    marginRight: 8,
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: "#374151",
   },
 });

@@ -41,6 +41,7 @@ export const typography = StyleSheet.create({
     fontSize: 17,
     color: COLORS.text.secondary,
     marginBottom: 5,
+    textAlign: 'center',
   },
   paragraph: {
     fontSize: 16,

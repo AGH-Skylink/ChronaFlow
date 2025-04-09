@@ -120,7 +120,12 @@ export default function SessionPlayer() {
 
   if (completed) {
     return (
-      <View style={TestStyles.container}>
+      <View
+        style={
+          (TestStyles.container,
+          { padding: 30, paddingTop: 50, height: "100%", paddingBottom: 0 })
+        }
+      >
         <View style={TestStyles.resultsContainer}>
           <Ionicons name="checkmark-circle" size={64} color={COLORS.success} />
           <Text style={TestStyles.title}>Session Completed!</Text>
@@ -128,8 +133,11 @@ export default function SessionPlayer() {
             You've completed all the tests in this session.
           </Text>
 
-          <TouchableOpacity style={TestStyles.resetButton} onPress={handleExit}>
-            <Text style={TestStyles.resetButtonText}>Return to Sessions</Text>
+          <TouchableOpacity
+            style={TestStyles.primaryButton}
+            onPress={handleExit}
+          >
+            <Text style={TestStyles.primaryButtonText}>Return to Sessions</Text>
           </TouchableOpacity>
         </View>
       </View>

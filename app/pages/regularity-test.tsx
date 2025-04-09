@@ -197,7 +197,6 @@ export default function RegularityTest({
                         />
                       </ResultsCard>
 
-                      <TestButton title="Start Again" onPress={resetTest} />
                       <TouchableOpacity
                         style={TestStyles.resetButton}
                         onPress={onComplete ? handleNextTest : resetTest}

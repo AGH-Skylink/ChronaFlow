@@ -33,6 +33,15 @@ export default function TabLayout() {
           title: "Home",
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
         }}
+      />{" "}
+      <Tabs.Screen
+        name="sessions"
+        options={{
+          title: "Sessions",
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="list-ul" color={color} />
+          ),
+        }}
       />
       <Tabs.Screen
         name="tests-results"
