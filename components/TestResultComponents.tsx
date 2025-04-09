@@ -28,9 +28,14 @@ export const EmptyState = ({
   </View>
 );
 
-export const DeleteButton = ({ onPress }: { onPress: () => void }) => (
+export const DeleteButton = ({ handlePress }: { handlePress: () => void }) => (
   <View style={styles.deleteButtonContainer}>
-    <TouchableOpacity style={styles.deleteButton} onPress={onPress}>
+    <TouchableOpacity
+      style={styles.deleteButton}
+      onPress={() => {
+        handlePress();
+      }}
+    >
       <FontAwesome name="trash" size={18} color="#f87171" />
       <Text style={styles.deleteButtonText}>Delete</Text>
     </TouchableOpacity>

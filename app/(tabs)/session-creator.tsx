@@ -15,13 +15,7 @@ import { Session, SessionBlock, TestType } from "@/types/session";
 import { saveSession, getSessions, deleteSession } from "@/utils/sessionUtils";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { TestStyles } from "@/constants/TestStyles";
-import {
-  COLORS,
-  shadow,
-  typography,
-  layout,
-  buttons,
-} from "@/constants/Styles";
+import { COLORS, typography, layout, buttons } from "@/constants/Styles";
 import { useFocusEffect } from "@react-navigation/native";
 
 export default function SessionCreator() {
@@ -614,7 +608,6 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     color: COLORS.text.primary,
-    ...shadow.small,
   },
   blockSection: {
     marginBottom: 24,
@@ -631,7 +624,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginHorizontal: 4,
-    ...shadow.small,
     backgroundColor: "transparent",
     borderWidth: 1,
     borderColor: COLORS.border,

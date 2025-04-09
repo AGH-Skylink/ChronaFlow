@@ -132,7 +132,22 @@ const exportResultsMobile = async (config: ExportConfig) => {
   }
 };
 
-export const clearAllResults = (storageKey: string, eventName: string) => {
+const clearAllResultsWeb = (storageKey: string, eventName: string) => {
+  if (confirm("Are you sure you want to delete all test results? This action cannot be undone.")) {
+    try {
+      AsyncStorage.removeItem(storageKey).then(() => {
+        console.log("All results cleared");
+        EventRegister.emit(eventName, true);
+        alert("All results have been cleared.");
+      });
+    } catch (error) {
+      console.error("Error clearing results:", error);
+      alert("Failed to clear results. Please try again.");
+    }
+  }
+};
+
+const clearAllResultsMobile = (storageKey: string, eventName: string) => {
   Alert.alert(
     "Clear All Results",
     "Are you sure you want to delete all test results? This action cannot be undone.",
@@ -148,12 +163,8 @@ export const clearAllResults = (storageKey: string, eventName: string) => {
           try {
             await AsyncStorage.removeItem(storageKey);
             console.log("All results cleared");
-
             EventRegister.emit(eventName, true);
-
-            Alert.alert("Success", "All results have been cleared.", [
-              { text: "OK" },
-            ]);
+            Alert.alert("Success", "All results have been cleared.", [{ text: "OK" }]);
           } catch (error) {
             console.error("Error clearing results:", error);
             Alert.alert("Error", "Failed to clear results. Please try again.");
@@ -162,6 +173,15 @@ export const clearAllResults = (storageKey: string, eventName: string) => {
       },
     ]
   );
+};
+
+export const clearAllResults = (storageKey: string, eventName: string) => {
+  console.log("Clearing all results for key:", storageKey);
+  if (Platform.OS === "web") {
+    clearAllResultsWeb(storageKey, eventName);
+  } else {
+    clearAllResultsMobile(storageKey, eventName);
+  }
 };
 
 export const formatDate = (dateValue: string | number) => {
@@ -291,16 +311,12 @@ export const exportAllResults = async () => {
       }
     }
 
-    // Generate the Excel file
     const fileDate = new Date().toISOString().replace(/[:.]/g, "-");
     const fileName = `all_test_results_${fileDate}.xlsx`;
     
-    // Write file based on platform
     if (Platform.OS === "web") {
-      // For web, download the Excel file
       XLSX.writeFile(wb, fileName);
     } else {
-      // For mobile, create file and share
       const wbout = XLSX.write(wb, { 
         type: 'base64' as const, 
         bookType: 'xlsx' as const 
@@ -324,7 +340,117 @@ export const exportAllResults = async () => {
     }
   } catch (error) {
     console.error("Error exporting all results:", error);
-    Alert.alert("Error", "Failed to export results. Please try again.");
+    Alert.alert("Error", `Failed to export results. Please try again. ${error}`);
+  }
+};
+
+const deleteResultWeb = async (
+  storageKey: string, 
+  identifier: string, 
+  identifierField: string,
+  onSuccess?: (updatedResults: any[]) => void
+): Promise<boolean> => {
+  if (confirm("Are you sure you want to delete this result? This action cannot be undone.")) {
+    try {
+      const resultsJson = await AsyncStorage.getItem(storageKey);
+      if (!resultsJson) {
+        alert("No results found to delete.");
+        return false;
+      }
+      const parsedResults = JSON.parse(resultsJson);
+      const updatedResults = parsedResults.filter(
+        (result: any) => result[identifierField] !== identifier
+      );
+
+      await AsyncStorage.setItem(
+        storageKey,
+        JSON.stringify(updatedResults)
+      );
+
+      if (onSuccess) {
+        onSuccess(updatedResults);
+      }
+      
+      console.log("Result deleted successfully");
+      return true;
+    } catch (error) {
+      console.error("Error deleting result:", error);
+      alert("Failed to delete result. Please try again.");
+    }
+  }
+  return false;
+};
+
+const deleteResultMobile = async (
+  storageKey: string, 
+  identifier: string, 
+  identifierField: string = 'id',
+  onSuccess?: (updatedResults: any[]) => void
+): Promise<boolean> => {
+  return new Promise((resolve) => {
+    Alert.alert(
+      "Delete Result",
+      "Are you sure you want to delete this result?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+          onPress: () => resolve(false),
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const resultsJson = await AsyncStorage.getItem(storageKey);
+
+              if (resultsJson) {
+                const parsedResults = JSON.parse(resultsJson);
+                const updatedResults = parsedResults.filter(
+                  (result: any) => result[identifierField] !== identifier
+                );
+
+                await AsyncStorage.setItem(
+                  storageKey,
+                  JSON.stringify(updatedResults)
+                );
+
+                if (onSuccess) {
+                  onSuccess(updatedResults);
+                }
+                
+                console.log("Result deleted successfully");
+                resolve(true);
+              } else {
+                resolve(false);
+              }
+            } catch (error) {
+              console.error("Error deleting result:", error);
+              Alert.alert(
+                "Error",
+                "Failed to delete result. Please try again."
+              );
+              resolve(false);
+            }
+          },
+        },
+      ],
+      { cancelable: true, onDismiss: () => resolve(false) }
+    );
+  });
+};
+
+export const deleteResult = async (
+  storageKey: string, 
+  identifier: string, 
+  identifierField: string = 'id', 
+  onSuccess?: (updatedResults: any[]) => void
+): Promise<boolean> => {
+  console.log("Deleting result with identifier:", identifier);
+  if (Platform.OS === "web") {
+    return deleteResultWeb(storageKey, identifier, identifierField, onSuccess);
+  } else {
+    return deleteResultMobile(storageKey, identifier, identifierField, onSuccess);
   }
 };
 

@@ -8,6 +8,7 @@ import {
   exportResults,
   clearAllResults,
   formatDate,
+  deleteResult,
 } from "../../utils/results-utls";
 import {
   LoadingState,
@@ -22,7 +23,7 @@ type TestResult = {
   avgInterval: number;
   stdDevInterval: number;
   date: string;
-  tapTimestamps: number[];
+  tapTimestamps: number[] | null;
   notes?: string;
   sessionId?: string | null;
 };
@@ -48,9 +49,14 @@ export const exportRegularityResults = async () => {
       const stdDev = result.stdDevInterval.toFixed(3);
       const notes = result.notes || "";
       const sessionId = result.sessionId || "";
-      const timestamps = Array.from({ length: TAP_COUNT }, (_, i) =>
-        result.tapTimestamps[i] !== undefined ? result.tapTimestamps[i] : ""
-      );
+      const timestamps =
+        result.tapTimestamps != null
+          ? Array.from({ length: TAP_COUNT }, (_, i) =>
+              result.tapTimestamps![i] !== undefined
+                ? result.tapTimestamps![i]
+                : ""
+            )
+          : [];
       return `${date},${time},${sessionId},${avgInterval},${stdDev},"${notes}",${timestamps.join(
         ","
       )}\n`;
@@ -106,48 +112,10 @@ export default function RegularityResultsScreen() {
     }
   };
 
-  const deleteResult = (dateToDelete: string) => {
-    Alert.alert(
-      "Delete Result",
-      "Are you sure you want to delete this result?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const resultsJson = await AsyncStorage.getItem(STORAGE_KEY);
-
-              if (resultsJson) {
-                const parsedResults = JSON.parse(resultsJson);
-                const updatedResults = parsedResults.filter(
-                  (result: TestResult) => result.date !== dateToDelete
-                );
-
-                // Save updated results
-                await AsyncStorage.setItem(
-                  STORAGE_KEY,
-                  JSON.stringify(updatedResults)
-                );
-
-                setResults(updatedResults);
-                console.log("Result deleted successfully");
-              }
-            } catch (error) {
-              console.error("Error deleting result:", error);
-              Alert.alert(
-                "Error",
-                "Failed to delete result. Please try again."
-              );
-            }
-          },
-        },
-      ]
-    );
+  const handleDeleteResult = (dateToDelete: string) => {
+    deleteResult(STORAGE_KEY, dateToDelete, "date", (updatedResults) => {
+      setResults(updatedResults);
+    });
   };
 
   const startEditingNote = (date: string) => {
@@ -224,7 +192,9 @@ export default function RegularityResultsScreen() {
                 onSave={(noteText) => saveNote(result.date, noteText)}
                 onCancel={cancelEditingNote}
               />
-              <DeleteButton onPress={() => deleteResult(result.date)} />
+              <DeleteButton
+                handlePress={() => handleDeleteResult(result.date)}
+              />
             </View>
           ))}
         </ScrollView>
