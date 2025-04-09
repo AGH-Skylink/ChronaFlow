@@ -24,6 +24,7 @@ interface TestResult {
   targetExposure: number;
   userInput: number;
   notes?: string;
+  sessionId?: string | null;
 }
 
 // Storage key and event name constants
@@ -33,13 +34,15 @@ const RESULTS_CLEARED_EVENT = "passiveResultsCleared";
 export const exportPassiveResults = async () => {
   await exportResults({
     storageKey: STORAGE_KEY,
-    csvHeader: "Day,Time,Target Duration (ms),Your Duration (ms),Notes\n",
+    csvHeader:
+      "Day,Time,Session Id,Target Duration (ms),Your Duration (ms),Notes\n",
     formatRow: (result: TestResult) => {
       const date = new Date(result.timestamp).toLocaleString();
       const [day, time] = date.split(", ");
-      return `"${day}","${time}",${result.targetExposure},${
-        result.userInput
-      },"${result.notes || ""}"\n`;
+      return `"${day}","${time}",${result.sessionId || ""},${
+        result.targetExposure
+      },${result.userInput},"${result.notes || ""}, 
+      "\n`;
     },
     fileNamePrefix: "passive_test_results",
     dialogTitle: "Save Passive Test Results",

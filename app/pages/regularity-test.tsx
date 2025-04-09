@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { saveTestResult } from "@/utils/storageUtils";
+import { saveTestResult } from "@/utils/results-utls";
 import { ResultRow } from "@/components/ResultRow";
 import { TestButton } from "@/components/TestButton";
 import { ResultsCard } from "@/components/ResultsCard";
@@ -22,9 +22,13 @@ const TAP_COUNT = 25;
 
 interface RegularityTestProps {
   onComplete?: () => void;
+  sessionId?: string | null; // Add sessionId to props
 }
 
-export default function RegularityTest({ onComplete }: RegularityTestProps) {
+export default function RegularityTest({
+  onComplete,
+  sessionId = null,
+}: RegularityTestProps) {
   const [testStarted, setTestStarted] = useState(false);
   const [isCountdownActive, setIsCountdownActive] = useState<boolean>(false);
   const [testCompleted, setTestCompleted] = useState(false);
@@ -91,6 +95,7 @@ export default function RegularityTest({ onComplete }: RegularityTestProps) {
       date: new Date().toISOString(),
       tapTimestamps: relativeTapTimestamps, // in milliseconds
       notes: "",
+      sessionId: sessionId, // Include the sessionId in results
     };
 
     setResults(resultData);

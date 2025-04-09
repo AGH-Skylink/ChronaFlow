@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { ResultRow } from "../../components/ResultRow";
-import { saveTestResult } from "@/utils/storageUtils";
+import { saveTestResult } from "@/utils/results-utls";
 import { TestStyles } from "@/constants/TestStyles";
 import { randomEmoji, randomTime } from "@/utils/test-utils";
 import { Countdown } from "@/components/Countdown";
@@ -24,13 +24,18 @@ interface TestResult {
   targetDuration: number;
   userDuration: number;
   notes?: string;
+  sessionId?: string | null; // Add sessionId field (nullable)
 }
 
 interface ActiveTestProps {
   onComplete?: () => void;
+  sessionId?: string | null; // Add sessionId to props
 }
 
-export default function ActiveTest({ onComplete }: ActiveTestProps) {
+export default function ActiveTest({
+  onComplete,
+  sessionId = null,
+}: ActiveTestProps) {
   const [testStarted, setTestStarted] = useState<boolean>(false);
   const [isCountdownActive, setIsCountdownActive] = useState<boolean>(false);
   const [phase, setPhase] = useState<"exposure" | "reproduction" | "result">(
@@ -82,6 +87,7 @@ export default function ActiveTest({ onComplete }: ActiveTestProps) {
         targetDuration: targetExposure,
         userDuration: duration,
         notes: "", // Keep empty notes field for later editing
+        sessionId: sessionId, // Include the sessionId in results
       };
       saveTestResult("activeTestResults", testResult);
     }

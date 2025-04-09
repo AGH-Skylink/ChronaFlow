@@ -12,7 +12,7 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { ResultRow } from "../../components/ResultRow";
 import { TestStyles } from "@/constants/TestStyles";
-import { saveTestResult } from "@/utils/storageUtils";
+import { saveTestResult } from "@/utils/results-utls";
 import { randomEmoji, randomTime } from "@/utils/test-utils";
 import { Countdown } from "@/components/Countdown";
 import Slider from "@react-native-community/slider";
@@ -24,13 +24,18 @@ interface TestResult {
   targetExposure: number;
   userInput: number;
   notes?: string;
+  sessionId?: string | null; // Add sessionId field (nullable)
 }
 
 interface PassiveTestProps {
   onComplete?: () => void;
+  sessionId?: string | null; // Add sessionId to props
 }
 
-export default function PassiveTest({ onComplete }: PassiveTestProps) {
+export default function PassiveTest({
+  onComplete,
+  sessionId = null,
+}: PassiveTestProps) {
   const [testStarted, setTestStarted] = useState<boolean>(false);
   const [isCountdownActive, setIsCountdownActive] = useState<boolean>(false);
   const [phase, setPhase] = useState<"exposure" | "input" | "result">(
@@ -86,6 +91,7 @@ export default function PassiveTest({ onComplete }: PassiveTestProps) {
       targetExposure,
       userInput: sliderValue,
       notes: "", // Keep empty notes field for later editing
+      sessionId: sessionId, // Include the sessionId in results
     };
 
     saveTestResult("passiveTestResults", result);

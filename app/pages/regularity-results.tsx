@@ -24,6 +24,7 @@ type TestResult = {
   date: string;
   tapTimestamps: number[];
   notes?: string;
+  sessionId?: string | null;
 };
 
 const STORAGE_KEY = "regularityTestResults";
@@ -35,7 +36,7 @@ export const exportRegularityResults = async () => {
   await exportResults({
     storageKey: STORAGE_KEY,
     csvHeader:
-      "Day,Time,Average Interval (ms),Standard Deviation (ms),Notes," +
+      "Day,Time,SessionId,Average Interval (ms),Standard Deviation (ms),Notes," +
       Array.from({ length: TAP_COUNT }, (_, i) => `Timestamp${i + 1}`).join(
         ","
       ) +
@@ -46,10 +47,11 @@ export const exportRegularityResults = async () => {
       const avgInterval = result.avgInterval.toFixed(3);
       const stdDev = result.stdDevInterval.toFixed(3);
       const notes = result.notes || "";
+      const sessionId = result.sessionId || "";
       const timestamps = Array.from({ length: TAP_COUNT }, (_, i) =>
         result.tapTimestamps[i] !== undefined ? result.tapTimestamps[i] : ""
       );
-      return `${date},${time},${avgInterval},${stdDev},"${notes}",${timestamps.join(
+      return `${date},${time},${sessionId},${avgInterval},${stdDev},"${notes}",${timestamps.join(
         ","
       )}\n`;
     },
