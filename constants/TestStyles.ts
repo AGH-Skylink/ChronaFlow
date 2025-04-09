@@ -20,6 +20,7 @@ export const TestStyles = StyleSheet.create({
     fontWeight: "bold",
     color: COLORS.text.primary,
     marginBottom: 16,
+    textAlign: "center",
     },
 
   // Header styles
