@@ -24,12 +24,12 @@ interface TestResult {
   targetExposure: number;
   userInput: number;
   notes?: string;
-  sessionId?: string | null; // Add sessionId field (nullable)
+  sessionId?: string | null;
 }
 
 interface PassiveTestProps {
   onComplete?: () => void;
-  sessionId?: string | null; // Add sessionId to props
+  sessionId?: string | null;
 }
 
 export default function PassiveTest({
