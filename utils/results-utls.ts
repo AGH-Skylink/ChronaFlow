@@ -4,11 +4,6 @@ import * as Sharing from "expo-sharing";
 import { Alert, Platform } from "react-native";
 import { EventRegister } from "react-native-event-listeners";
 
-export interface BaseTestResult {
-  date?: string;
-  timestamp?: number;
-}
-
 export interface ExportConfig {
   storageKey: string;
   csvHeader: string;
@@ -139,3 +134,25 @@ export const formatDate = (dateValue: string | number) => {
     return "Invalid date";
   }
 };
+
+export const saveTestResult = async <T extends { id: string }>(
+  storageKey: string,
+  result: T
+) => {
+  try {
+    const existingResultsJSON = await AsyncStorage.getItem(storageKey);
+    const existingResults: T[] = existingResultsJSON
+      ? JSON.parse(existingResultsJSON)
+      : [];
+
+    const updatedResults = [result, ...existingResults];
+
+    await AsyncStorage.setItem(storageKey, JSON.stringify(updatedResults));
+    console.log("Test result saved successfully");
+    return true;
+  } catch (error) {
+    console.error(`Error saving test result to ${storageKey}:`, error);
+    return false;
+  }
+};
+

@@ -57,11 +57,26 @@ export default function SessionPlayer() {
   const renderTestComponent = (block: SessionBlock) => {
     switch (block.type) {
       case "active":
-        return <ActiveTest onComplete={handleNext} />;
+        return (
+          <ActiveTest
+            onComplete={handleNext}
+            sessionId={sessionId?.toString()}
+          />
+        );
       case "passive":
-        return <PassiveTest onComplete={handleNext} />;
+        return (
+          <PassiveTest
+            onComplete={handleNext}
+            sessionId={sessionId?.toString()}
+          />
+        );
       case "regularity":
-        return <RegularityTest onComplete={handleNext} />;
+        return (
+          <RegularityTest
+            onComplete={handleNext}
+            sessionId={sessionId?.toString()}
+          />
+        );
       default:
         return null;
     }
@@ -173,22 +188,25 @@ export default function SessionPlayer() {
   return renderTestComponent(currentBlock);
 }
 
-// Add the onComplete prop to the component types
+// Add the onComplete and sessionId props to the component types
 declare module "./active-test" {
   interface Props {
     onComplete?: () => void;
+    sessionId?: string | null;
   }
 }
 
 declare module "./passive-test" {
   interface Props {
     onComplete?: () => void;
+    sessionId?: string | null;
   }
 }
 
 declare module "./regularity-test" {
   interface Props {
     onComplete?: () => void;
+    sessionId?: string | null;
   }
 }
 
