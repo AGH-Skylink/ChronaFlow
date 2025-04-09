@@ -3,7 +3,6 @@ import {
   TouchableOpacity,
   View,
   Text,
-  TextInput,
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
@@ -13,7 +12,7 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { ResultRow } from "../../components/ResultRow";
 import { TestStyles } from "@/constants/TestStyles";
-import { saveTestResult } from "@/utils/storageUtils";
+import { saveTestResult } from "@/utils/results-utls";
 import { randomEmoji, randomTime } from "@/utils/test-utils";
 import { Countdown } from "@/components/Countdown";
 import Slider from "@react-native-community/slider";
@@ -25,9 +24,18 @@ interface TestResult {
   targetExposure: number;
   userInput: number;
   notes?: string;
+  sessionId?: string | null;
 }
 
-export default function PassiveTestScreen() {
+interface PassiveTestProps {
+  onComplete?: () => void;
+  sessionId?: string | null;
+}
+
+export default function PassiveTest({
+  onComplete,
+  sessionId = null,
+}: PassiveTestProps) {
   const [testStarted, setTestStarted] = useState<boolean>(false);
   const [isCountdownActive, setIsCountdownActive] = useState<boolean>(false);
   const [phase, setPhase] = useState<"exposure" | "input" | "result">(
@@ -83,6 +91,7 @@ export default function PassiveTestScreen() {
       targetExposure,
       userInput: sliderValue,
       notes: "", // Keep empty notes field for later editing
+      sessionId: sessionId, // Include the sessionId in results
     };
 
     saveTestResult("passiveTestResults", result);
@@ -96,6 +105,15 @@ export default function PassiveTestScreen() {
     setTargetExposure(0);
     setSliderValue(1000);
     setCurrentEmoji(randomEmoji());
+  };
+
+  const handleNextTest = () => {
+    if (onComplete) {
+      resetTest();
+      onComplete();
+    } else {
+      resetTest();
+    }
   };
 
   useFocusEffect(
@@ -225,10 +243,10 @@ export default function PassiveTestScreen() {
 
                       <TouchableOpacity
                         style={TestStyles.resetButton}
-                        onPress={resetTest}
+                        onPress={onComplete ? handleNextTest : resetTest}
                       >
                         <Text style={TestStyles.resetButtonText}>
-                          Try Again
+                          {onComplete ? "Next Test" : "Try Again"}
                         </Text>
                       </TouchableOpacity>
                     </View>

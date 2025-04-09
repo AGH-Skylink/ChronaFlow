@@ -8,6 +8,7 @@ import {
   exportResults,
   clearAllResults,
   formatDate,
+  deleteResult,
 } from "../../utils/results-utls";
 import {
   LoadingState,
@@ -24,6 +25,7 @@ interface TestResult {
   targetDuration: number;
   userDuration: number;
   notes?: string;
+  sessionId?: string | null;
 }
 
 // Storage key and event name constants
@@ -33,13 +35,14 @@ const RESULTS_CLEARED_EVENT = "activeResultsCleared";
 export const exportActiveResults = async () => {
   await exportResults({
     storageKey: STORAGE_KEY,
-    csvHeader: "Day,Time,Target Duration (ms),Your Duration (ms),Notes\n",
+    csvHeader:
+      "Day,Time,Session Id,Target Duration (ms),Your Duration (ms),Notes\n",
     formatRow: (result: TestResult) => {
       const date = new Date(result.timestamp).toLocaleString();
       const [day, time] = date.split(", ");
-      return `"${day}","${time}",${result.targetDuration},${
-        result.userDuration
-      },"${result.notes || ""}"\n`;
+      return `"${day}","${time}",${result.sessionId || ""},${
+        result.targetDuration
+      },${result.userDuration},"${result.notes || ""}"\n`;
     },
     fileNamePrefix: "active_test_results",
     dialogTitle: "Save Active Test Results",
@@ -91,47 +94,10 @@ export default function ActiveResultsScreen() {
     }
   };
 
-  const deleteResult = (idToDelete: string) => {
-    Alert.alert(
-      "Delete Result",
-      "Are you sure you want to delete this result?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const resultsJson = await AsyncStorage.getItem(STORAGE_KEY);
-
-              if (resultsJson) {
-                const parsedResults = JSON.parse(resultsJson);
-                const updatedResults = parsedResults.filter(
-                  (result: TestResult) => result.id !== idToDelete
-                );
-
-                await AsyncStorage.setItem(
-                  STORAGE_KEY,
-                  JSON.stringify(updatedResults)
-                );
-
-                setResults(updatedResults);
-                console.log("Result deleted successfully");
-              }
-            } catch (error) {
-              console.error("Error deleting result:", error);
-              Alert.alert(
-                "Error",
-                "Failed to delete result. Please try again."
-              );
-            }
-          },
-        },
-      ]
-    );
+  const handleDeleteResult = (idToDelete: string) => {
+    deleteResult(STORAGE_KEY, idToDelete, "id", (updatedResults) => {
+      setResults(updatedResults);
+    });
   };
 
   const startEditingNote = (id: string) => {
@@ -176,7 +142,7 @@ export default function ActiveResultsScreen() {
         <EmptyState
           testName="active test"
           routePath="/(tabs)/active-test"
-          onTakeTest={() => router.push("/(tabs)/active-test")}
+          onTakeTest={() => router.push("/pages/active-test")}
         />
       ) : (
         <ScrollView
@@ -218,7 +184,7 @@ export default function ActiveResultsScreen() {
                 onCancel={cancelEditingNote}
               />
 
-              <DeleteButton onPress={() => deleteResult(result.id)} />
+              <DeleteButton handlePress={() => handleDeleteResult(result.id)} />
             </View>
           ))}
         </ScrollView>

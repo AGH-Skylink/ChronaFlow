@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { saveTestResult } from "@/utils/storageUtils";
+import { saveTestResult } from "@/utils/results-utls";
 import { ResultRow } from "@/components/ResultRow";
 import { TestButton } from "@/components/TestButton";
 import { ResultsCard } from "@/components/ResultsCard";
@@ -20,7 +20,15 @@ import { useFocusEffect } from "@react-navigation/native";
 
 const TAP_COUNT = 25;
 
-export default function RegularityTestScreen() {
+interface RegularityTestProps {
+  onComplete?: () => void;
+  sessionId?: string | null; // Add sessionId to props
+}
+
+export default function RegularityTest({
+  onComplete,
+  sessionId = null,
+}: RegularityTestProps) {
   const [testStarted, setTestStarted] = useState(false);
   const [isCountdownActive, setIsCountdownActive] = useState<boolean>(false);
   const [testCompleted, setTestCompleted] = useState(false);
@@ -87,6 +95,7 @@ export default function RegularityTestScreen() {
       date: new Date().toISOString(),
       tapTimestamps: relativeTapTimestamps, // in milliseconds
       notes: "",
+      sessionId: sessionId, // Include the sessionId in results
     };
 
     setResults(resultData);
@@ -103,6 +112,15 @@ export default function RegularityTestScreen() {
       avgInterval: 0,
       stdDevInterval: 0,
     });
+  };
+
+  const handleNextTest = () => {
+    if (onComplete) {
+      resetTest();
+      onComplete();
+    } else {
+      resetTest();
+    }
   };
 
   useFocusEffect(
@@ -179,7 +197,14 @@ export default function RegularityTestScreen() {
                         />
                       </ResultsCard>
 
-                      <TestButton title="Start Again" onPress={resetTest} />
+                      <TouchableOpacity
+                        style={TestStyles.resetButton}
+                        onPress={onComplete ? handleNextTest : resetTest}
+                      >
+                        <Text style={TestStyles.resetButtonText}>
+                          {onComplete ? "Next Test" : "Try Again"}
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                   </TouchableOpacity>
                 </ScrollView>

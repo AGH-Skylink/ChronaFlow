@@ -21,39 +21,7 @@ export const COLORS = {
   info: '#1e40af',
 };
 
-// Consistent shadow style
-export const shadow = {
-  small: {
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  medium: {
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  large: {
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 10,
-  },
-};
+
 
 // Common text styles
 export const typography = StyleSheet.create({
@@ -73,6 +41,7 @@ export const typography = StyleSheet.create({
     fontSize: 17,
     color: COLORS.text.secondary,
     marginBottom: 5,
+    textAlign: 'center',
   },
   paragraph: {
     fontSize: 16,
@@ -94,7 +63,6 @@ export const typography = StyleSheet.create({
 export const layout = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
   },
   headerContainer: {
     paddingTop: 50,
@@ -102,11 +70,12 @@ export const layout = StyleSheet.create({
     alignItems: 'center',
   },
   card: {
-    backgroundColor: COLORS.background.secondary,
+    backgroundColor: "transparent",
+    borderWidth: 3,
+    borderColor: COLORS.border,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
-    ...shadow.small,
+    margin: 16,
   },
   row: {
     flexDirection: 'row',
@@ -124,7 +93,9 @@ export const layout = StyleSheet.create({
 // Button styles
 export const buttons = StyleSheet.create({
   primary: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: COLORS.border,
     paddingVertical: 14,
     paddingHorizontal: 36,
     borderRadius: 8,
@@ -152,7 +123,6 @@ export const testArea = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 16,
     marginBottom: 20,
-    ...shadow.large,
   },
   active: {
     backgroundColor: COLORS.background.secondary,
@@ -171,6 +141,5 @@ export const resultsCard = StyleSheet.create({
     padding: 16,
     marginTop: 16,
     marginBottom: 24,
-    ...shadow.small,
   },
 });
