@@ -79,6 +79,30 @@ function RootLayoutNav() {
             headerRight: () => <ExtraOptionsMenu />,
           }}
         />
+        <Stack.Screen
+          name="pages/regularity-test"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="pages/active-test"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="pages/passive-test"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="pages/session-player"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );

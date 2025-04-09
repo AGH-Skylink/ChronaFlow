@@ -33,30 +33,14 @@ export default function TabLayout() {
           title: "Home",
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
         }}
-      />
+      />{" "}
       <Tabs.Screen
-        name="regularity-test"
+        name="sessions"
         options={{
-          title: "Regularity Test",
+          title: "Sessions",
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="hand-o-up" color={color} />
+            <TabBarIcon name="list-ul" color={color} />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="passive-test"
-        options={{
-          title: "Passive Test",
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="play-circle" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="active-test"
-        options={{
-          title: "Active Test",
-          tabBarIcon: ({ color }) => <TabBarIcon name="eye" color={color} />,
         }}
       />
       <Tabs.Screen

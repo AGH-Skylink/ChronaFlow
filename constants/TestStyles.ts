@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { COLORS, shadow, typography, layout, buttons, testArea } from "./Styles";
+import { COLORS, typography, layout, buttons, testArea } from "./Styles";
 
 /**
  * Common styles for all cognitive test screens
@@ -20,6 +20,7 @@ export const TestStyles = StyleSheet.create({
     fontWeight: "bold",
     color: COLORS.text.primary,
     marginBottom: 16,
+    textAlign: "center",
     },
 
   // Header styles
@@ -42,7 +43,6 @@ export const TestStyles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 16,
     marginBottom: 20,
-    ...shadow.large,
   },
   activeArea: {
     backgroundColor: COLORS.background.secondary,
@@ -92,7 +92,6 @@ export const TestStyles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     width: 150,
-    ...shadow.medium,
   },
   inputFieldFocused: {
     backgroundColor: "#3b3b3b",
@@ -123,7 +122,6 @@ export const TestStyles = StyleSheet.create({
     padding: 16,
     marginTop: 16,
     marginBottom: 24,
-    ...shadow.small,
   },
   
   // Common elements
@@ -149,7 +147,6 @@ export const TestStyles = StyleSheet.create({
     borderRadius: 12,
     width: "80%",
     alignItems: "center",
-    ...shadow.medium,
   },
   disabledButton: {
     opacity: 0.5,

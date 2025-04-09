@@ -7,6 +7,7 @@ import {
   Animated,
   Modal,
   TouchableWithoutFeedback,
+  Pressable,
 } from "react-native";
 import { useColorScheme } from "./useColorScheme";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
@@ -118,7 +119,7 @@ export function ExtraOptionsMenu() {
         animationType="none"
         onRequestClose={() => setIsMenuVisible(false)}
       >
-        <TouchableWithoutFeedback onPress={toggleMenu}>
+        <Pressable onPress={toggleMenu}>
           <View style={styles.modalOverlay}>
             <Animated.View
               style={[
@@ -162,7 +163,7 @@ export function ExtraOptionsMenu() {
               </TouchableOpacity>
             </Animated.View>
           </View>
-        </TouchableWithoutFeedback>
+        </Pressable>
       </Modal>
     </View>
   );
@@ -185,13 +186,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1f2937",
     borderRadius: 8,
     width: 200,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    boxShadow: "#000",
     elevation: 5,
     borderWidth: 1,
     borderColor: "#374151",
