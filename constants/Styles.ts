@@ -21,39 +21,7 @@ export const COLORS = {
   info: '#1e40af',
 };
 
-// Consistent shadow style
-export const shadow = {
-  small: {
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  medium: {
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  large: {
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 10,
-  },
-};
+
 
 // Common text styles
 export const typography = StyleSheet.create({
@@ -107,7 +75,6 @@ export const layout = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     margin: 16,
-    ...shadow.small,
   },
   row: {
     flexDirection: 'row',
@@ -155,7 +122,6 @@ export const testArea = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 16,
     marginBottom: 20,
-    ...shadow.large,
   },
   active: {
     backgroundColor: COLORS.background.secondary,
@@ -174,6 +140,5 @@ export const resultsCard = StyleSheet.create({
     padding: 16,
     marginTop: 16,
     marginBottom: 24,
-    ...shadow.small,
   },
 });

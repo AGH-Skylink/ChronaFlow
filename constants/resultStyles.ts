@@ -15,13 +15,7 @@ export const resultCardStyles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    boxShadow: "#000",
     elevation: 2,
   },
   resultHeader: {

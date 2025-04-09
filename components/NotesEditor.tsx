@@ -26,7 +26,6 @@ export const NotesEditor = ({
 }: NotesEditorProps) => {
   const [editedNote, setEditedNote] = useState<string>(notes);
 
-  // This ensures we update the local state when props change
   useEffect(() => {
     if (!isEditing) {
       setEditedNote(notes);
