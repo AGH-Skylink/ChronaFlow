@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   ScrollView,
@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   FlatList,
   Alert,
-  View as RNView, // Import regular React Native View
+  View as RNView,
+  BackHandler,
 } from "react-native";
 import { Text, View } from "@/components/Themed";
 import { useRouter } from "expo-router";
@@ -21,17 +22,32 @@ import {
   layout,
   buttons,
 } from "@/constants/Styles";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function SessionCreator() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [sessionName, setSessionName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     loadSessions();
   }, []);
+
+  // Track unsaved changes
+  useEffect(() => {
+    if (
+      isCreating &&
+      (sessionName.trim() !== "" ||
+        (currentSession && currentSession.blocks.length > 0))
+    ) {
+      setHasUnsavedChanges(true);
+    } else {
+      setHasUnsavedChanges(false);
+    }
+  }, [sessionName, currentSession?.blocks, isCreating]);
 
   const loadSessions = async () => {
     const loadedSessions = await getSessions();
@@ -47,6 +63,7 @@ export default function SessionCreator() {
       createdAt: Date.now(),
       blocks: [],
     });
+    setHasUnsavedChanges(false);
   };
 
   const addBlock = (type: TestType) => {
@@ -134,6 +151,8 @@ export default function SessionCreator() {
     await saveSession(sessionToSave);
     setIsCreating(false);
     setCurrentSession(null);
+    setSessionName("");
+    setHasUnsavedChanges(false);
     loadSessions();
   };
 
@@ -208,13 +227,63 @@ export default function SessionCreator() {
       </TouchableOpacity>
     </View>
   );
+  const SessionListFooter = () => (
+    <View style={styles.footerContainer}>
+      <TouchableOpacity
+        style={[TestStyles.primaryButton, { marginVertical: 20 }]}
+        onPress={createNewSession}
+      >
+        <Text style={TestStyles.primaryButtonText}>Create New Session</Text>
+      </TouchableOpacity>
+    </View>
+  );
+  const handleBackPress = useCallback(() => {
+    if (hasUnsavedChanges) {
+      Alert.alert(
+        "Discard Changes",
+        "You have unsaved changes. Are you sure you want to exit?",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Discard",
+            style: "destructive",
+            onPress: () => {
+              setIsCreating(false);
+              setCurrentSession(null);
+              setSessionName("");
+              setHasUnsavedChanges(false);
+            },
+          },
+        ]
+      );
+      return true;
+    } else {
+      setIsCreating(false);
+      setCurrentSession(null);
+      setSessionName("");
+      return true;
+    }
+  }, [hasUnsavedChanges]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (isCreating) {
+        const backHandler = BackHandler.addEventListener(
+          "hardwareBackPress",
+          handleBackPress
+        );
+        return () => backHandler.remove();
+      }
+      return () => {};
+    }, [isCreating, handleBackPress])
+  );
 
   if (isCreating) {
     return (
       <View
         style={[
           layout.container,
-          { backgroundColor: COLORS.background.primary },
+          { backgroundColor: COLORS.background.primary, margin: 16 },
         ]}
       >
         <ScrollView
@@ -222,12 +291,27 @@ export default function SessionCreator() {
           contentContainerStyle={[styles.contentContainer, { paddingTop: 50 }]}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => setIsCreating(false)}>
+          <View
+            style={
+              (styles.header,
+              {
+                flexDirection: "row",
+                alignItems: "center",
+              })
+            }
+          >
+            <TouchableOpacity onPress={handleBackPress}>
               <Ionicons
                 name="arrow-back"
                 size={24}
                 color={COLORS.text.primary}
+                style={
+                  (styles.headerButton,
+                  {
+                    marginRight: 16,
+                    marginBottom: 4,
+                  })
+                }
               />
             </TouchableOpacity>
             <Text style={typography.header}>Create New Session</Text>
@@ -249,7 +333,7 @@ export default function SessionCreator() {
 
             <View style={styles.blockActions}>
               <TouchableOpacity
-                style={[styles.blockTypeButton, { backgroundColor: "#4c1d95" }]}
+                style={[styles.blockTypeButton]}
                 onPress={() => addBlock("passive")}
               >
                 <FontAwesome
@@ -261,7 +345,7 @@ export default function SessionCreator() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.blockTypeButton, { backgroundColor: "#1d4ed8" }]}
+                style={[styles.blockTypeButton]}
                 onPress={() => addBlock("active")}
               >
                 <FontAwesome name="eye" size={18} color={COLORS.text.primary} />
@@ -269,7 +353,7 @@ export default function SessionCreator() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.blockTypeButton, { backgroundColor: "#065f46" }]}
+                style={[styles.blockTypeButton]}
                 onPress={() => addBlock("regularity")}
               >
                 <FontAwesome
@@ -283,7 +367,9 @@ export default function SessionCreator() {
 
             {currentSession && currentSession.blocks.length > 0 ? (
               <View style={layout.card}>
-                <Text style={typography.subtitle}>Test Sequence:</Text>
+                <Text style={[typography.subtitle, { textAlign: "left" }]}>
+                  Test Sequence:
+                </Text>
                 {currentSession.blocks.map((block, index) => (
                   <View key={block.id} style={styles.blockItem}>
                     <View style={styles.blockInfo}>
@@ -349,9 +435,7 @@ export default function SessionCreator() {
                 ))}
               </View>
             ) : (
-              <View
-                style={[layout.card, { alignItems: "center", padding: 24 }]}
-              >
+              <View style={[layout.card, { alignItems: "center" }]}>
                 <Text style={typography.subtitle}>
                   No test blocks added yet
                 </Text>
@@ -367,25 +451,26 @@ export default function SessionCreator() {
             )}
           </View>
 
-          <TouchableOpacity
-            style={[
-              TestStyles.primaryButton,
-              (!sessionName.trim() || currentSession?.blocks.length === 0) &&
-                TestStyles.disabledButton,
-            ]}
-            onPress={handleSaveSession}
-            disabled={
-              !sessionName.trim() || currentSession?.blocks.length === 0
-            }
-          >
-            <Text style={TestStyles.primaryButtonText}>Save Session</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[
+                TestStyles.primaryButton,
+                (!sessionName.trim() || currentSession?.blocks.length === 0) &&
+                  TestStyles.disabledButton,
+              ]}
+              onPress={handleSaveSession}
+              disabled={
+                !sessionName.trim() || currentSession?.blocks.length === 0
+              }
+            >
+              <Text style={TestStyles.primaryButtonText}>Save Session</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </View>
     );
   }
 
-  // Session list mode - Use FlatList directly at the root level
   return (
     <View
       style={[layout.container, { backgroundColor: COLORS.background.primary }]}
@@ -395,6 +480,7 @@ export default function SessionCreator() {
         keyExtractor={(item) => item.id}
         ListHeaderComponent={SessionListHeader}
         ListEmptyComponent={EmptySessionList}
+        ListFooterComponent={sessions.length > 0 ? SessionListFooter : null}
         contentContainerStyle={[
           styles.contentContainer,
           { paddingTop: 50 },
@@ -469,6 +555,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     borderBottomColor: COLORS.border,
     backgroundColor: "transparent",
+    paddingBottom: 16,
+    marginBottom: 16,
   },
   emptyState: {
     backgroundColor: "transparent",
@@ -518,7 +606,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   formGroup: {
-    marginBottom: 24,
+    marginVertical: 24,
   },
   input: {
     backgroundColor: COLORS.background.tertiary,
@@ -544,6 +632,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginHorizontal: 4,
     ...shadow.small,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   blockTypeText: {
     color: COLORS.text.primary,
@@ -558,10 +649,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: COLORS.border,
+    width: "100%", // Ensure full width
   },
   blockInfo: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "flex-start", // Align to left
+    flex: 1, // Take up available space
   },
   blockOrder: {
     backgroundColor: COLORS.background.tertiary,
@@ -577,9 +671,11 @@ const styles = StyleSheet.create({
     color: COLORS.text.primary,
     fontSize: 16,
     marginLeft: 8,
+    textAlign: "left", // Ensure text is left-aligned
   },
   blockControls: {
     flexDirection: "row",
+    justifyContent: "flex-end", // Push controls to the right
   },
   blockControl: {
     padding: 6,
@@ -590,5 +686,23 @@ const styles = StyleSheet.create({
   blockControlRemove: {
     padding: 6,
     marginLeft: 6,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    width: "100%",
+    marginVertical: 16,
+  },
+  headerButton: {
+    width: "auto", // Override the default width from TestStyles
+    paddingHorizontal: 10,
+    margin: 0,
+    marginLeft: "auto", // Push button to the right
+  },
+  footerContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    paddingBottom: 20,
   },
 });

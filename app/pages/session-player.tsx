@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { StatusBar } from "expo-status-bar";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { getSessionById } from "@/utils/sessionUtils";
 import { Session, SessionBlock } from "@/types/session";
@@ -118,7 +123,16 @@ export default function SessionPlayer() {
 
   if (!isPlaying) {
     return (
-      <View style={TestStyles.container}>
+      <ScrollView
+        style={{ flex: 1, backgroundColor: COLORS.background.primary }}
+        contentContainerStyle={{
+          flexGrow: 1, // ensures content grows and is scrollable
+          padding: 30,
+          paddingTop: 50,
+          paddingBottom: 30, // extra bottom padding for visibility
+        }}
+        showsVerticalScrollIndicator={false}
+      >
         <TouchableOpacity style={styles.backButton} onPress={handleExit}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text.primary} />
         </TouchableOpacity>
@@ -126,12 +140,12 @@ export default function SessionPlayer() {
         <Text style={TestStyles.header}>{session.name}</Text>
         <Text style={TestStyles.instructions}>Session Overview</Text>
 
-        <View style={styles.blockList}>
+        <View style={{ marginVertical: 20 }}>
           {session.blocks.map((block, index) => renderBlockInfo(block, index))}
         </View>
 
         <TouchableOpacity
-          style={TestStyles.primaryButton}
+          style={[styles.beginSessionButton]}
           onPress={handleStart}
         >
           <View
@@ -147,10 +161,10 @@ export default function SessionPlayer() {
               color="#fff"
               style={{ marginRight: 8 }}
             />
-            <Text style={TestStyles.primaryButtonText}>Begin Session</Text>
+            <Text style={TestStyles.resetButtonText}>Begin Session</Text>
           </View>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     );
   }
 
@@ -216,5 +230,13 @@ const styles = StyleSheet.create({
   blockName: {
     fontSize: 16,
     color: COLORS.text.primary,
+  },
+  beginSessionButton: {
+    paddingVertical: 14,
+    paddingHorizontal: 36,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 30,
   },
 });
