@@ -277,15 +277,24 @@ export const exportAllResults = async () => {
     if (regularityResultsJson) {
       const regularityResults = JSON.parse(regularityResultsJson) as RegularityResults[];
       if (regularityResults.length > 0) {
-        // Convert data to format expected by xlsx
-        const regularityData = regularityResults.map((result: RegularityResults) => ({
-          Day: new Date(result.date).toLocaleDateString(),
-          Time: new Date(result.date).toLocaleTimeString(),
-          'Session Id': result.sessionId || "",
-          'Average Interval (s)': parseFloat(result.avgInterval.toFixed(3)),
-          'Standard Deviation (s)': parseFloat(result.stdDevInterval.toFixed(3)),
-          Notes: result.notes || ""
-        }));
+        const regularityData = regularityResults.map((result: RegularityResults) => {
+          const baseData: { [key: string]: any } = {
+            Day: new Date(result.date).toLocaleDateString(),
+            Time: new Date(result.date).toLocaleTimeString(),
+            'Session Id': result.sessionId || "",
+            'Average Interval (s)': parseFloat(result.avgInterval.toFixed(3)),
+            'Standard Deviation (s)': parseFloat(result.stdDevInterval.toFixed(3)),
+            'Notes': result.notes || "",
+          };
+
+          if (result.tapTimestamps && Array.isArray(result.tapTimestamps)) {
+            result.tapTimestamps.forEach((timestamp, index) => {
+              baseData[`Timestamp ${index + 1}`] = timestamp;
+            });
+          }
+          
+          return baseData;
+        });
         
         // Create worksheet and add to workbook
         const regularityWs = XLSX.utils.json_to_sheet(regularityData);
