@@ -1,0 +1,51 @@
+{
+  "name": "chronaflow-server",
+  "version": "1.0.0",
+  "description": "A wrapper for Expo Server",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "package": "electron-builder"
+  },
+  "keywords": [],
+  "author": "Kacper Wojtowicz",
+  "license": "MIT",
+  "build": {
+    "appId": "com.skylink.chronaflowserver",
+    "productName": "ChronaFlowServer",
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer.js",
+      "index.html",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "./portable-node/node",
+        "to": "app/node",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "./portable-expo/node_modules",
+        "to": "app/expo_modules",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico"
+    }
+  }
+}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>ChronaFlow Expo Server</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self'">
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            background-color: #282c34;
+            color: #abb2bf;
+        }
+
+        #output-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 20px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .info {
+            color: #61afef;
+        }
+
+        .error {
+            color: #e06c75;
+        }
+
+        .warn {
+            color: #e5c07b;
+        }
+
+        .success {
+            color: #98c379;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="output-container">
+        <p class="info">Attempting to start Expo server...</p>
+    </div>
+    <script src="./renderer.js"></script>
+</body>
+
+</html>
