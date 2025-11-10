@@ -4,6 +4,9 @@
     "strict": true,
     "paths": {
       "@/*": ["./*"],
+      "@domain/*": ["./src/domain/*"],
+      "@models/*": ["./src/domain/models/*"],
+      "@features/*": ["./src/features/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]

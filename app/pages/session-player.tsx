@@ -10,7 +10,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { getSessionById } from "@/utils/sessionUtils";
 import { Session, SessionBlock } from "@/types/session";
 import { Ionicons } from "@expo/vector-icons";
-import ActiveTest from "./active-test";
+import ActiveTest from "./active-test-page";
 import PassiveTest from "./passive-test";
 import RegularityTest from "./regularity-test";
 import { TestStyles } from "@/constants/TestStyles";
@@ -197,7 +197,7 @@ export default function SessionPlayer() {
 }
 
 // Add the onComplete and sessionId props to the component types
-declare module "./active-test" {
+declare module "./active-test-page" {
   interface Props {
     onComplete?: () => void;
     sessionId?: string | null;

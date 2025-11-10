@@ -1,0 +1,59 @@
+import React from "react";
+import { View } from "react-native";
+import { TestStyles } from "@/constants/TestStyles";
+import { ExposureBasedPhase } from "@features/ExposureBasedTest";
+import { useActiveTestStateContext } from "@/context/ActiveTestContext";
+import { ActiveTestExposure } from "@/components/exposure-based-test/ExposureBasedTestExposure";
+import { ActiveTestReproduction } from "@/components/exposure-based-test/ActiveTestReproduction";
+import { ActiveTestResults } from "@/components/exposure-based-test/ExposureBasedTestResults";
+
+interface ActiveTestPhaseContentProps {
+  isCountdownActive: boolean;
+  onStartTimer: () => void;
+  onEndTimer: () => void;
+  onNext: () => void;
+  nextButtonLabel: string;
+}
+
+export function ActiveTestPhaseContent({
+  isCountdownActive,
+  onStartTimer,
+  onEndTimer,
+  onNext,
+  nextButtonLabel,
+}: ActiveTestPhaseContentProps) {
+  const {
+    state: phase,
+    emoji,
+    targetExposure,
+    holdDuration,
+  } = useActiveTestStateContext();
+  const isResultPhase = phase === ExposureBasedPhase.RESULTS;
+
+  return (
+    <View
+      style={[
+        TestStyles.testArea,
+        isResultPhase ? TestStyles.resultsContainer : TestStyles.testContainer,
+      ]}
+    >
+      {phase === ExposureBasedPhase.EXPOSURE && !isCountdownActive && (
+        <ActiveTestExposure emoji={emoji} />
+      )}
+      {phase === ExposureBasedPhase.REPRODUCTION && (
+        <ActiveTestReproduction
+          onPressIn={onStartTimer}
+          onPressOut={onEndTimer}
+        />
+      )}
+      {phase === ExposureBasedPhase.RESULTS && (
+        <ActiveTestResults
+          targetExposure={targetExposure}
+          holdDuration={holdDuration}
+          onNext={onNext}
+          nextButtonLabel={nextButtonLabel}
+        />
+      )}
+    </View>
+  );
+}

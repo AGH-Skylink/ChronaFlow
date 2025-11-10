@@ -104,10 +104,10 @@ const exportResultsMobile = async (config: ExportConfig) => {
 
       const fileDate = new Date().toISOString().replace(/[:.]/g, "-");
       const fileName = `${config.fileNamePrefix}_${fileDate}.csv`;
-      const filePath = `${FileSystem.documentDirectory}${fileName}`;
+      const filePath = `${FileSystem.Paths.document}${fileName}`;
 
-      await FileSystem.writeAsStringAsync(filePath, csvContent);
-
+      const file = new FileSystem.File(filePath)
+      file.write(csvContent)
       const isSharingAvailable = await Sharing.isAvailableAsync();
 
       if (isSharingAvailable) {
@@ -330,11 +330,10 @@ export const exportAllResults = async () => {
         type: 'base64' as const, 
         bookType: 'xlsx' as const 
       });
-      const filePath = `${FileSystem.documentDirectory}${fileName}`;
+      const filePath = `${FileSystem.Paths.document}${fileName}`;
       
-      await FileSystem.writeAsStringAsync(filePath, wbout, {
-        encoding: FileSystem.EncodingType.Base64
-      });
+      const file = new FileSystem.File(filePath);
+      file.write(wbout);
       
       const isSharingAvailable = await Sharing.isAvailableAsync();
       if (isSharingAvailable) {
