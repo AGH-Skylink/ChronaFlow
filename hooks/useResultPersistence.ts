@@ -1,17 +1,21 @@
 import { useCallback } from "react";
 import { saveTestResult } from "@/utils/results-utls";
-import { ActiveResult } from "@models/ActiveResult";
+import { ExposureBasedResult } from "@models/ExposureBasedResult";
 
-export function useResultPersistence() {
-  const saveResult = useCallback(async (result: ActiveResult) => {
+/**
+ * Generic hook for persisting test results
+ * Works with any ExposureBasedResult (Active, Passive, Regularity)
+ */
+export function useResultPersistence(storageKey: string = "activeTestResults") {
+  const saveResult = useCallback(async (result: ExposureBasedResult) => {
     try {
-      await saveTestResult("activeTestResults", result);
+      await saveTestResult(storageKey, result);
       return true;
     } catch (error) {
       console.error("Failed to save test result", error);
       return false;
     }
-  }, []);
+  }, [storageKey]);
 
   return { saveResult };
 }

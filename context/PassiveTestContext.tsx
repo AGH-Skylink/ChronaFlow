@@ -1,0 +1,79 @@
+import React, { ReactNode } from "react";
+import { ExposureBasedPhase } from "@features/ExposureBasedTest";
+import { usePassiveTestState } from "@/hooks/usePassiveTestState";
+import { ExposureBasedResult } from "@models/ExposureBasedResult";
+import {
+  createExposureBasedTestContext,
+  ExposureBasedTestContextValue,
+} from "./ExposureBasedTestContext";
+
+interface PassiveTestState {
+  state: ExposureBasedPhase;
+  targetExposure: number;
+  emoji: string;
+  sliderValue: number;
+}
+
+interface PassiveTestOperations {
+  startTest: () => boolean;
+  beginExposure: () => boolean;
+  completeExposure: () => boolean;
+  setSliderValue: (value: number) => void;
+  calculateResults: () => ExposureBasedResult | null;
+  reset: () => void;
+}
+
+const PassiveTestContextHelper = createExposureBasedTestContext<
+  PassiveTestState,
+  PassiveTestOperations
+>("PassiveTest");
+
+interface PassiveTestProviderProps {
+  children: ReactNode;
+  sessionId: string | null;
+}
+
+export function PassiveTestProvider({
+  children,
+  sessionId,
+}: PassiveTestProviderProps) {
+  const testState = usePassiveTestState(sessionId);
+
+  const contextValue: ExposureBasedTestContextValue<
+    PassiveTestState,
+    PassiveTestOperations
+  > = {
+    state: {
+      state: testState.state,
+      targetExposure: testState.targetExposure,
+      emoji: testState.emoji,
+      sliderValue: testState.sliderValue,
+    },
+    operations: {
+      startTest: testState.startTest,
+      beginExposure: testState.beginExposure,
+      completeExposure: testState.completeExposure,
+      setSliderValue: testState.setSliderValue,
+      calculateResults: testState.calculateResults,
+      reset: testState.reset,
+    },
+  };
+
+  return (
+    <PassiveTestContextHelper.Context.Provider value={contextValue}>
+      {children}
+    </PassiveTestContextHelper.Context.Provider>
+  );
+}
+
+export function usePassiveTestContext() {
+  return PassiveTestContextHelper.useContext();
+}
+
+export function usePassiveTestStateContext() {
+  return PassiveTestContextHelper.useStateContext();
+}
+
+export function usePassiveTestOperations() {
+  return PassiveTestContextHelper.useOperations();
+}

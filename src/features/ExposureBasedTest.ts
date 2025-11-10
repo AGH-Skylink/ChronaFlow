@@ -87,6 +87,7 @@ export class ExposureBasedTest {
       this.sessionId
     );
   }
+  
   randomTimeMillis() {
     const min = 1
     const max = 5

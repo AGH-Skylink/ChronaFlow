@@ -1,26 +1,30 @@
 import { useState, useCallback } from "react";
-import { ExposureBasedPhase } from "@features/ExposureBasedTest";
-import { useActiveTestOperations } from "@/context/ActiveTestContext";
+import { usePassiveTestOperations } from "@/context/PassiveTestContext";
 import { useExposureTimer } from "./useExposureTimer";
 import { useResultPersistence } from "./useResultPersistence";
 
-const STORAGE_KEY = "activeTestResults";
+const STORAGE_KEY = "passiveTestResults";
 
-interface UseActiveTestHandlersProps {
+interface UsePassiveTestHandlersProps {
   onComplete?: () => void;
 }
 
-export function useActiveTestHandlers({
+/**
+ * Orchestrates handlers for passive test interactions
+ * Manages countdown, exposure timer, slider input, and result submission
+ */
+export function usePassiveTestHandlers({
   onComplete,
-}: UseActiveTestHandlersProps = {}) {
-  const operations = useActiveTestOperations();
+}: UsePassiveTestHandlersProps = {}) {
+  const operations = usePassiveTestOperations();
   const [isCountdownActive, setIsCountdownActive] = useState(false);
   const { saveResult } = useResultPersistence(STORAGE_KEY);
 
+  // Exposure timer will be started in handleCountdownComplete
   const { startTimer: startExposureTimer } = useExposureTimer({
     targetExposure: 0, // Will be set dynamically
     onComplete: operations.completeExposure,
-    enabled: false, // Will be controlled manually
+    enabled: false,
   });
 
   const handleStart = useCallback(() => {
@@ -40,8 +44,15 @@ export function useActiveTestHandlers({
     return false;
   }, [operations, startExposureTimer]);
 
-  const handlePressOut = useCallback(async () => {
-    const result = operations.endTimer();
+  const handleSliderChange = useCallback(
+    (value: number) => {
+      operations.setSliderValue(value);
+    },
+    [operations]
+  );
+
+  const handleCalculateResults = useCallback(async () => {
+    const result = operations.calculateResults();
     if (result) {
       await saveResult(result);
       return true;
@@ -60,7 +71,8 @@ export function useActiveTestHandlers({
     isCountdownActive,
     handleStart,
     handleCountdownComplete,
-    handlePressOut,
+    handleSliderChange,
+    handleCalculateResults,
     handleNextTest,
   };
 }
