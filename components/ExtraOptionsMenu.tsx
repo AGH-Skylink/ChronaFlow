@@ -8,13 +8,12 @@ import {
   Modal,
   TouchableWithoutFeedback,
   Pressable,
+  Alert,
+  Platform,
 } from "react-native";
 import { useColorScheme } from "./useColorScheme";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import {
-  exportActiveResults,
-  clearActiveResults,
-} from "@/app/pages/active-results";
+import { useResultsOperations } from "@/context/ResultsContext";
 import {
   exportRegularityResults,
   clearRegularityResults,
@@ -24,32 +23,6 @@ import {
   clearPassiveResults,
 } from "@/app/pages/passive-results";
 import { usePathname } from "expo-router";
-
-function getExportFunction(pathname: string | undefined) {
-  if (pathname?.includes("active-results")) {
-    return exportActiveResults;
-  }
-  if (pathname?.includes("passive-results")) {
-    return exportPassiveResults;
-  }
-  if (pathname?.includes("regularity-results")) {
-    return exportRegularityResults;
-  }
-  return null;
-}
-
-function getClearFunction(pathname: string | undefined) {
-  if (pathname?.includes("active-results")) {
-    return clearActiveResults;
-  }
-  if (pathname?.includes("passive-results")) {
-    return clearPassiveResults;
-  }
-  if (pathname?.includes("regularity-results")) {
-    return clearRegularityResults;
-  }
-  return null;
-}
 
 export function ExtraOptionsMenu() {
   const colorScheme = useColorScheme();
@@ -62,6 +35,15 @@ export function ExtraOptionsMenu() {
   });
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const pathname = usePathname();
+
+  // Try to get context operations (will be available for active-results)
+  let contextOperations;
+  try {
+    contextOperations = useResultsOperations();
+  } catch {
+    // Context not available (e.g., passive or regularity results)
+    contextOperations = null;
+  }
 
   const toggleMenu = () => {
     if (isMenuVisible) {
@@ -80,18 +62,51 @@ export function ExtraOptionsMenu() {
     }
   };
 
-  const handleExportPress = () => {
-    const exportFunction = getExportFunction(pathname);
-    if (exportFunction) {
-      exportFunction();
+  const handleExportPress = async () => {
+    try {
+      if (pathname?.includes("active-results") && contextOperations) {
+        await contextOperations.exportResults();
+      } else if (pathname?.includes("passive-results")) {
+        await exportPassiveResults();
+      } else if (pathname?.includes("regularity-results")) {
+        await exportRegularityResults();
+      }
+    } catch (error) {
+      console.error("Error exporting results:", error);
     }
   };
 
   const handleClearPress = () => {
     toggleMenu();
-    const clearFunction = getClearFunction(pathname);
-    if (clearFunction) {
-      clearFunction();
+
+    const clearAction = async () => {
+      try {
+        if (pathname?.includes("active-results") && contextOperations) {
+          await contextOperations.clearAll();
+        } else if (pathname?.includes("passive-results")) {
+          clearPassiveResults();
+        } else if (pathname?.includes("regularity-results")) {
+          clearRegularityResults();
+        }
+      } catch (error) {
+        console.error("Error clearing results:", error);
+      }
+    };
+
+    // Show confirmation dialog
+    if (Platform.OS === "web") {
+      if (confirm("Are you sure you want to clear all results?")) {
+        clearAction();
+      }
+    } else {
+      Alert.alert(
+        "Clear All Results",
+        "Are you sure you want to clear all results? This action cannot be undone.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Clear", style: "destructive", onPress: clearAction },
+        ]
+      );
     }
   };
 
