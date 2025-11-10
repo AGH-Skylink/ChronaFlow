@@ -2,10 +2,7 @@ import React, { ReactNode } from "react";
 import { ExposureBasedPhase } from "@features/ExposureBasedTest";
 import { usePassiveTestState } from "@/hooks/usePassiveTestState";
 import { ExposureBasedResult } from "@models/ExposureBasedResult";
-import {
-  createExposureBasedTestContext,
-  ExposureBasedTestContextValue,
-} from "./ExposureBasedTestContext";
+import { createTestContext, TestContextValue } from "./TestContext";
 
 interface PassiveTestState {
   state: ExposureBasedPhase;
@@ -23,7 +20,7 @@ interface PassiveTestOperations {
   reset: () => void;
 }
 
-const PassiveTestContextHelper = createExposureBasedTestContext<
+const PassiveTestContextHelper = createTestContext<
   PassiveTestState,
   PassiveTestOperations
 >("PassiveTest");
@@ -39,7 +36,7 @@ export function PassiveTestProvider({
 }: PassiveTestProviderProps) {
   const testState = usePassiveTestState(sessionId);
 
-  const contextValue: ExposureBasedTestContextValue<
+  const contextValue: TestContextValue<
     PassiveTestState,
     PassiveTestOperations
   > = {

@@ -1,25 +1,21 @@
 import React, { createContext, useContext, ReactNode } from "react";
 
-export interface ExposureBasedTestContextValue<TState, TOperations> {
+export interface TestContextValue<TState, TOperations> {
   state: TState;
   operations: TOperations;
 }
 
 /**
- * Factory function to create a typed context for exposure-based tests
+ * Factory function to create a typed context for any test type
  * This enables reuse of the context pattern across Active, Passive, and Regularity tests
  *
- * @param displayName - Name for debugging (e.g., "ActiveTest", "PassiveTest")
+ * @param displayName - Name for debugging (e.g., "ActiveTest", "PassiveTest", "RegularityTest")
  * @returns Context, Provider, and hooks for the test type
  */
-export function createExposureBasedTestContext<TState, TOperations>(
-  displayName: string
-) {
-  const Context = createContext<ExposureBasedTestContextValue<
-    TState,
-    TOperations
-  > | null>(null);
-
+export function createTestContext<TState, TOperations>(displayName: string) {
+  const Context = createContext<TestContextValue<TState, TOperations> | null>(
+    null
+  );
   Context.displayName = `${displayName}Context`;
 
   function useContextInternal() {

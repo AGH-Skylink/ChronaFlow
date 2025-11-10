@@ -1,7 +1,8 @@
-import React, { createContext, useContext, ReactNode } from "react";
+import React, { ReactNode } from "react";
 import { ExposureBasedPhase } from "@features/ExposureBasedTest";
 import { useActiveTestState } from "@/hooks/useActiveTestState";
 import { ActiveResult } from "@models/ActiveResult";
+import { createTestContext, TestContextValue } from "./TestContext";
 
 interface ActiveTestState {
   state: ExposureBasedPhase;
@@ -19,12 +20,10 @@ interface ActiveTestOperations {
   reset: () => void;
 }
 
-interface ActiveTestContextValue {
-  state: ActiveTestState;
-  operations: ActiveTestOperations;
-}
-
-const ActiveTestContext = createContext<ActiveTestContextValue | null>(null);
+const ActiveTestContextHelper = createTestContext<
+  ActiveTestState,
+  ActiveTestOperations
+>("ActiveTest");
 
 interface ActiveTestProviderProps {
   children: ReactNode;
@@ -37,46 +36,39 @@ export function ActiveTestProvider({
 }: ActiveTestProviderProps) {
   const testState = useActiveTestState(sessionId);
 
-  const contextValue: ActiveTestContextValue = {
-    state: {
-      state: testState.state,
-      targetExposure: testState.targetExposure,
-      emoji: testState.emoji,
-      holdDuration: testState.holdDuration,
-    },
-    operations: {
-      startTest: testState.startTest,
-      beginExposure: testState.beginExposure,
-      completeExposure: testState.completeExposure,
-      startTimer: testState.startTimer,
-      endTimer: testState.endTimer,
-      reset: testState.reset,
-    },
-  };
+  const contextValue: TestContextValue<ActiveTestState, ActiveTestOperations> =
+    {
+      state: {
+        state: testState.state,
+        targetExposure: testState.targetExposure,
+        emoji: testState.emoji,
+        holdDuration: testState.holdDuration,
+      },
+      operations: {
+        startTest: testState.startTest,
+        beginExposure: testState.beginExposure,
+        completeExposure: testState.completeExposure,
+        startTimer: testState.startTimer,
+        endTimer: testState.endTimer,
+        reset: testState.reset,
+      },
+    };
 
   return (
-    <ActiveTestContext.Provider value={contextValue}>
+    <ActiveTestContextHelper.Context.Provider value={contextValue}>
       {children}
-    </ActiveTestContext.Provider>
+    </ActiveTestContextHelper.Context.Provider>
   );
 }
 
 export function useActiveTestContext() {
-  const context = useContext(ActiveTestContext);
-  if (!context) {
-    throw new Error(
-      "useActiveTestContext must be used within ActiveTestProvider"
-    );
-  }
-  return context;
+  return ActiveTestContextHelper.useContext();
 }
 
 export function useActiveTestStateContext() {
-  const { state } = useActiveTestContext();
-  return state;
+  return ActiveTestContextHelper.useStateContext();
 }
 
 export function useActiveTestOperations() {
-  const { operations } = useActiveTestContext();
-  return operations;
+  return ActiveTestContextHelper.useOperations();
 }
