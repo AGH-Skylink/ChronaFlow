@@ -95,7 +95,6 @@ export class ExportService {
     
     if (sessions.length > 0) {
       const exporter = new SessionExporter();
-      // Convert session data to Session models for the exporter
       const sessionModels = sessions.map(s => ({
         id: s.id,
         name: s.name,

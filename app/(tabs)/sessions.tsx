@@ -14,147 +14,68 @@ import {
 import { Text, View } from "@/components/Themed";
 import { useRouter } from "expo-router";
 import { Session, SessionBlock, TestType } from "@/types/session";
-import { SessionRepository } from "@/src/domain/repositories/SessionRepository";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { TestStyles } from "@/constants/TestStyles";
 import { COLORS, typography, layout, buttons } from "@/constants/Styles";
 import { useFocusEffect } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSessionManagement } from "@/hooks/useSessionManagement";
+import { useSessionBlockManagement } from "@/hooks/useSessionBlockManagement";
 
 export default function SessionCreator() {
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [currentSession, setCurrentSession] = useState<Session | null>(null);
-  const [sessionName, setSessionName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const menuAnim = useRef(new Animated.Value(0)).current;
   const router = useRouter();
-  const sessionRepository = useRef(new SessionRepository()).current;
+
+  const {
+    sessions,
+    loading,
+    loadSessions,
+    createNewSession,
+    saveSession,
+    deleteSession,
+  } = useSessionManagement();
+
+  const {
+    currentSession,
+    sessionName,
+    hasUnsavedChanges,
+    initializeSession,
+    addBlock,
+    removeBlock,
+    moveBlockUp,
+    moveBlockDown,
+    updateSessionName,
+    reset,
+  } = useSessionBlockManagement();
 
   useEffect(() => {
     loadSessions();
-  }, []);
+  }, [loadSessions]);
 
-  // Track unsaved changes
-  useEffect(() => {
-    if (
-      isCreating &&
-      (sessionName.trim() !== "" ||
-        (currentSession && currentSession.blocks.length > 0))
-    ) {
-      setHasUnsavedChanges(true);
-    } else {
-      setHasUnsavedChanges(false);
-    }
-  }, [sessionName, currentSession?.blocks, isCreating]);
-
-  const loadSessions = async () => {
-    const loadedSessions = await sessionRepository.getAll();
-    setSessions(loadedSessions);
-  };
-
-  const createNewSession = () => {
+  const handleCreateNewSession = () => {
     setIsCreating(true);
-    setSessionName("");
-    setCurrentSession({
-      id: Date.now().toString(),
-      name: "",
-      createdAt: Date.now(),
-      blocks: [],
-    });
-    setHasUnsavedChanges(false);
-  };
-
-  const addBlock = (type: TestType) => {
-    if (!currentSession) return;
-
-    const newBlock: SessionBlock = {
-      id: Date.now().toString(),
-      type,
-      order: currentSession.blocks.length,
-    };
-
-    setCurrentSession({
-      ...currentSession,
-      blocks: [...currentSession.blocks, newBlock],
-    });
-  };
-
-  const removeBlock = (blockId: string) => {
-    if (!currentSession) return;
-
-    const updatedBlocks = currentSession.blocks
-      .filter((block) => block.id !== blockId)
-      .map((block, index) => ({ ...block, order: index }));
-
-    setCurrentSession({
-      ...currentSession,
-      blocks: updatedBlocks,
-    });
-  };
-
-  const moveBlockUp = (index: number) => {
-    if (!currentSession || index <= 0) return;
-
-    const updatedBlocks = [...currentSession.blocks];
-    const temp = updatedBlocks[index];
-    updatedBlocks[index] = updatedBlocks[index - 1];
-    updatedBlocks[index - 1] = temp;
-
-    // Update order values
-    updatedBlocks.forEach((block, i) => {
-      block.order = i;
-    });
-
-    setCurrentSession({
-      ...currentSession,
-      blocks: updatedBlocks,
-    });
-  };
-
-  const moveBlockDown = (index: number) => {
-    if (!currentSession || index >= currentSession.blocks.length - 1) return;
-
-    const updatedBlocks = [...currentSession.blocks];
-    const temp = updatedBlocks[index];
-    updatedBlocks[index] = updatedBlocks[index + 1];
-    updatedBlocks[index + 1] = temp;
-
-    // Update order values
-    updatedBlocks.forEach((block, i) => {
-      block.order = i;
-    });
-
-    setCurrentSession({
-      ...currentSession,
-      blocks: updatedBlocks,
-    });
+    const newSession = createNewSession();
+    initializeSession(newSession);
   };
 
   const handleSaveSession = async () => {
-    if (!currentSession || !sessionName.trim()) {
-      Alert.alert("Error", "Please enter a session name");
+    if (!currentSession) {
+      Alert.alert("Error", "No session to save");
       return;
     }
 
-    if (currentSession.blocks.length === 0) {
-      Alert.alert("Error", "Please add at least one test block");
-      return;
+    try {
+      await saveSession(currentSession, sessionName);
+      setIsCreating(false);
+      reset();
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        error instanceof Error ? error.message : "Failed to save session"
+      );
     }
-
-    const sessionToSave = {
-      ...currentSession,
-      name: sessionName.trim(),
-    };
-
-    await sessionRepository.save(sessionToSave);
-    setIsCreating(false);
-    setCurrentSession(null);
-    setSessionName("");
-    setHasUnsavedChanges(false);
-    loadSessions();
   };
 
   const handleDeleteSession = async (
@@ -172,64 +93,15 @@ export default function SessionCreator() {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            await sessionRepository.delete(sessionId);
-
-            if (deleteResults) {
-              await deleteSessionResults(sessionId);
-            } else {
-              await nullifySessionResults(sessionId);
+            try {
+              await deleteSession(sessionId, deleteResults);
+            } catch (error) {
+              Alert.alert("Error", "Failed to delete session");
             }
-
-            loadSessions();
           },
         },
       ]
     );
-  };
-
-  const deleteSessionResults = async (sessionId: string) => {
-    try {
-      await deleteTestResultsForSession("activeTestResults", sessionId);
-      await deleteTestResultsForSession("passiveTestResults", sessionId);
-      await deleteTestResultsForSession("regularityTestResults", sessionId);
-    } catch (error) {
-      console.error("Error deleting session results:", error);
-      Alert.alert("Error", "Failed to delete all test results");
-    }
-  };
-
-  const deleteTestResultsForSession = async (
-    storageKey: string,
-    sessionId: string
-  ) => {
-    const resultsJson = await AsyncStorage.getItem(storageKey);
-    if (resultsJson) {
-      const results = JSON.parse(resultsJson);
-      const filteredResults = results.filter(
-        (result: any) => result.sessionId !== sessionId
-      );
-      await AsyncStorage.setItem(storageKey, JSON.stringify(filteredResults));
-    }
-  };
-
-  const nullifySessionResults = async (sessionId: string) => {
-    try {
-      const resultsJson = await AsyncStorage.getItem("activeTestResults");
-      if (resultsJson) {
-        const results = JSON.parse(resultsJson);
-        const updatedResults = results.map((result: any) =>
-          result.sessionId === sessionId
-            ? { ...result, sessionId: null }
-            : result
-        );
-        await AsyncStorage.setItem(
-          "activeTestResults",
-          JSON.stringify(updatedResults)
-        );
-      }
-    } catch (error) {
-      console.error("Error nullifying session results:", error);
-    }
   };
 
   const showSessionMenu = (sessionId: string) => {
@@ -300,7 +172,7 @@ export default function SessionCreator() {
       </Text>
       <TouchableOpacity
         style={TestStyles.primaryButton}
-        onPress={createNewSession}
+        onPress={handleCreateNewSession}
       >
         <Text style={TestStyles.primaryButtonText}>Create Session</Text>
       </TouchableOpacity>
@@ -310,7 +182,7 @@ export default function SessionCreator() {
     <View style={styles.footerContainer}>
       <TouchableOpacity
         style={[TestStyles.primaryButton, { marginVertical: 20 }]}
-        onPress={createNewSession}
+        onPress={handleCreateNewSession}
       >
         <Text style={TestStyles.primaryButtonText}>Create New Session</Text>
       </TouchableOpacity>
@@ -328,9 +200,7 @@ export default function SessionCreator() {
             style: "destructive",
             onPress: () => {
               setIsCreating(false);
-              setCurrentSession(null);
-              setSessionName("");
-              setHasUnsavedChanges(false);
+              reset();
             },
           },
         ]
@@ -338,11 +208,10 @@ export default function SessionCreator() {
       return true;
     } else {
       setIsCreating(false);
-      setCurrentSession(null);
-      setSessionName("");
+      reset();
       return true;
     }
-  }, [hasUnsavedChanges]);
+  }, [hasUnsavedChanges, reset]);
 
   useFocusEffect(
     useCallback(() => {
@@ -357,7 +226,6 @@ export default function SessionCreator() {
     }, [isCreating, handleBackPress])
   );
 
-  // Session Menu component
   const SessionMenu = () => (
     <Modal
       visible={menuVisible}
@@ -461,7 +329,7 @@ export default function SessionCreator() {
             <TextInput
               style={styles.input}
               value={sessionName}
-              onChangeText={setSessionName}
+              onChangeText={updateSessionName}
               placeholder="Enter session name"
               placeholderTextColor={COLORS.text.muted}
             />
@@ -785,13 +653,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: COLORS.border,
-    width: "100%", // Ensure full width
+    width: "100%",
   },
   blockInfo: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-start", // Align to left
-    flex: 1, // Take up available space
+    justifyContent: "flex-start",
+    flex: 1,
   },
   blockOrder: {
     backgroundColor: COLORS.background.tertiary,
@@ -807,11 +675,11 @@ const styles = StyleSheet.create({
     color: COLORS.text.primary,
     fontSize: 16,
     marginLeft: 8,
-    textAlign: "left", // Ensure text is left-aligned
+    textAlign: "left",
   },
   blockControls: {
     flexDirection: "row",
-    justifyContent: "flex-end", // Push controls to the right
+    justifyContent: "flex-end",
   },
   blockControl: {
     padding: 6,
@@ -830,10 +698,10 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   headerButton: {
-    width: "auto", // Override the default width from TestStyles
+    width: "auto",
     paddingHorizontal: 10,
     margin: 0,
-    marginLeft: "auto", // Push button to the right
+    marginLeft: "auto",
   },
   footerContainer: {
     alignItems: "center",
