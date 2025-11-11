@@ -4,7 +4,7 @@ import {
   ExportConfigBase,
 } from "./BaseResultsRepository";
 
-export type ExportConfig = ExportConfigBase;
+export type ExportConfig = ExportConfigBase<ExposureBasedResult>;
 
 export class ResultsRepository extends BaseResultsRepository<ExposureBasedResult> {
   protected parseResult(data: any): ExposureBasedResult {

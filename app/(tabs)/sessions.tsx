@@ -14,7 +14,7 @@ import {
 import { Text, View } from "@/components/Themed";
 import { useRouter } from "expo-router";
 import { Session, SessionBlock, TestType } from "@/types/session";
-import { saveSession, getSessions, deleteSession } from "@/utils/sessionUtils";
+import { SessionRepository } from "@/src/domain/repositories/SessionRepository";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { TestStyles } from "@/constants/TestStyles";
 import { COLORS, typography, layout, buttons } from "@/constants/Styles";
@@ -31,6 +31,7 @@ export default function SessionCreator() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const menuAnim = useRef(new Animated.Value(0)).current;
   const router = useRouter();
+  const sessionRepository = useRef(new SessionRepository()).current;
 
   useEffect(() => {
     loadSessions();
@@ -50,7 +51,7 @@ export default function SessionCreator() {
   }, [sessionName, currentSession?.blocks, isCreating]);
 
   const loadSessions = async () => {
-    const loadedSessions = await getSessions();
+    const loadedSessions = await sessionRepository.getAll();
     setSessions(loadedSessions);
   };
 
@@ -148,7 +149,7 @@ export default function SessionCreator() {
       name: sessionName.trim(),
     };
 
-    await saveSession(sessionToSave);
+    await sessionRepository.save(sessionToSave);
     setIsCreating(false);
     setCurrentSession(null);
     setSessionName("");
@@ -171,7 +172,7 @@ export default function SessionCreator() {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            await deleteSession(sessionId);
+            await sessionRepository.delete(sessionId);
 
             if (deleteResults) {
               await deleteSessionResults(sessionId);

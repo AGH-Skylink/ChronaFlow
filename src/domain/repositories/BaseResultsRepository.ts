@@ -7,17 +7,13 @@ export interface IResult {
   sessionId?: string | null;
 }
 
-export interface ExportConfigBase {
+export interface ExportConfigBase<T extends IResult> {
   storageKey: string;
   csvHeader: string;
-  formatRow: (result: IResult) => string;
+  formatRow: (result: T) => string;
   fileNamePrefix: string;
   dialogTitle: string;
 }
-
-/**
- * Generic base class for result repositories with common CRUD and export operations
- */
 export abstract class BaseResultsRepository<T extends IResult> {
   constructor(protected storageKey: string) {}
 
@@ -100,7 +96,7 @@ export abstract class BaseResultsRepository<T extends IResult> {
     }
   }
 
-  async exportToCsv(config: ExportConfigBase): Promise<string> {
+  async exportToCsv(config: ExportConfigBase<T>): Promise<string> {
     const results = await this.loadAll();
     let csvContent = config.csvHeader;
     results.forEach((result) => {

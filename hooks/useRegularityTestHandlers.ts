@@ -1,7 +1,8 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useRegularityTestOperations } from "@/context/RegularityTestContext";
 import { useResultPersistence } from "./useResultPersistence";
 import { RegularityResult } from "@models/RegularityResult";
+import { RegularityResultsRepository } from "@/src/domain/repositories/RegularityResultsRepository";
 
 const STORAGE_KEY = "regularityTestResults";
 
@@ -9,16 +10,13 @@ interface UseRegularityTestHandlersProps {
   onComplete?: () => void;
 }
 
-/**
- * Orchestrates handlers for regularity test interactions
- * Manages countdown, tapping, and result submission
- */
 export function useRegularityTestHandlers({
   onComplete,
 }: UseRegularityTestHandlersProps = {}) {
   const operations = useRegularityTestOperations();
   const [isCountdownActive, setIsCountdownActive] = useState(false);
-  const { saveResult } = useResultPersistence<RegularityResult>(STORAGE_KEY);
+  const repository = useMemo(() => new RegularityResultsRepository(STORAGE_KEY), []);
+  const { saveResult } = useResultPersistence(repository);
 
   const handleStart = useCallback(() => {
     if (operations.startTest()) {

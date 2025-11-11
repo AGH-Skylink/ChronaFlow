@@ -5,6 +5,7 @@ import {
   RegularityExportConfig,
 } from "@/src/domain/repositories/RegularityResultsRepository";
 import { createResultsContext } from "./createResultsContext";
+import { ExportConfigBase } from "@/src/domain/repositories/BaseResultsRepository";
 
 const regularityResultsContextHelper = createResultsContext<RegularityResult>(
   "RegularityResults",
@@ -26,4 +27,4 @@ export function useRegularityResultsOperations() {
   return regularityResultsContextHelper.useOperations();
 }
 
-export type { RegularityExportConfig };
+export type { RegularityExportConfig, ExportConfigBase };

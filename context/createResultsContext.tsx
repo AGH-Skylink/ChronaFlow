@@ -40,7 +40,7 @@ export function createResultsContext<T extends IResult>(
   interface ResultsProviderProps {
     children: ReactNode;
     storageKey: string;
-    exportConfig: ExportConfigBase;
+    exportConfig: ExportConfigBase<T>;
   }
 
   function ResultsProvider({

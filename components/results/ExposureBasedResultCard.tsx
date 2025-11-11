@@ -5,7 +5,7 @@ import { resultCardStyles } from "@/constants/resultStyles";
 import { ResultRow } from "@/components/ResultRow";
 import { NotesEditor } from "@/components/NotesEditor";
 import { DeleteButton } from "@/components/TestResultComponents";
-import { formatDate } from "@/utils/results-utls";
+import { DateFormatter } from "@/src/application/utils/DateFormatter";
 
 interface ExposureBasedResultCardProps {
   result: ExposureBasedResult;
@@ -31,7 +31,7 @@ export function ExposureBasedResultCard({
       <View style={resultCardStyles.resultHeader}>
         <View style={resultCardStyles.dateEmojiContainer}>
           <Text style={resultCardStyles.resultDate}>
-            {formatDate(result.timestamp)}
+            {DateFormatter.format(result.timestamp)}
           </Text>
         </View>
       </View>

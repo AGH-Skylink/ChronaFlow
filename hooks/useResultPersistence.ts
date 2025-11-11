@@ -1,22 +1,23 @@
-import { useCallback } from "react";
-import { saveTestResult } from "@/utils/results-utls";
+import { useCallback, useMemo } from "react";
+import { BaseResultsRepository, IResult } from "@/src/domain/repositories/BaseResultsRepository";
 
 /**
  * Generic hook for result persistence across test types
- * Accepts storage key as parameter for reusability
- * Generic type T represents any result type (ExposureBasedResult, RegularityResult, etc.)
- * All result types must have an 'id' property for storage
+ * Accepts a repository instance for full DDD compliance
+ * Generic type T represents any result type that extends IResult
  */
-export function useResultPersistence<T extends { id: string }>(storageKey: string) {
+export function useResultPersistence<T extends IResult>(
+  repository: BaseResultsRepository<T>
+) {
   const saveResult = useCallback(
     async (result: T) => {
       try {
-        await saveTestResult(storageKey, result);
+        await repository.save(result);
       } catch (error) {
         console.error("Failed to save result", error);
       }
     },
-    [storageKey]
+    [repository]
   );
 
   return { saveResult };

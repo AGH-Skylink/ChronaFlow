@@ -5,6 +5,7 @@ import {
   ExportConfig,
 } from "@/src/domain/repositories/ResultsRepository";
 import { createResultsContext } from "./createResultsContext";
+import { ExportConfigBase } from "@/src/domain/repositories/BaseResultsRepository";
 
 const resultsContextHelper = createResultsContext<ExposureBasedResult>(
   "Results",
@@ -25,4 +26,4 @@ export function useResultsOperations() {
   return resultsContextHelper.useOperations();
 }
 
-export type { ExportConfig };
+export type { ExportConfig, ExportConfigBase };

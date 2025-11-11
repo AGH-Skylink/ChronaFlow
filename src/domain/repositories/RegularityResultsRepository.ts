@@ -4,7 +4,7 @@ import {
   ExportConfigBase,
 } from "./BaseResultsRepository";
 
-export type RegularityExportConfig = ExportConfigBase;
+export type RegularityExportConfig = ExportConfigBase<RegularityResult>;
 
 export class RegularityResultsRepository extends BaseResultsRepository<RegularityResult> {
   protected parseResult(data: any): RegularityResult {

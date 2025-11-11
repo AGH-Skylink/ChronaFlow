@@ -1,14 +1,15 @@
-import React from "react";
+import React, { useRef } from "react";
 import { StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { Text, View } from "@/components/Themed";
 import { StatusBar } from "expo-status-bar";
 import { TestCard } from "@/components/TestCard";
-import { exportAllResults } from "@/utils/results-utls";
+import { ExportService } from "@/src/application/services/ExportService";
 import { FontAwesome } from "@expo/vector-icons";
 
 export default function TestsResultsScreen() {
   const router = useRouter();
+  const exportService = useRef(new ExportService()).current;
 
   return (
     <View style={styles.container}>
@@ -26,7 +27,7 @@ export default function TestsResultsScreen() {
       >
         <TouchableOpacity
           style={styles.exportAllButton}
-          onPress={exportAllResults}
+          onPress={() => exportService.exportAllResults()}
         >
           <FontAwesome
             name="file-excel-o"

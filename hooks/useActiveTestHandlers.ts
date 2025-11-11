@@ -1,8 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { ExposureBasedPhase } from "@features/ExposureBasedTest";
 import { useActiveTestOperations } from "@/context/ActiveTestContext";
 import { useExposureTimer } from "./useExposureTimer";
 import { useResultPersistence } from "./useResultPersistence";
+import { ResultsRepository } from "@/src/domain/repositories/ResultsRepository";
 
 const STORAGE_KEY = "activeTestResults";
 
@@ -15,7 +16,8 @@ export function useActiveTestHandlers({
 }: UseActiveTestHandlersProps = {}) {
   const operations = useActiveTestOperations();
   const [isCountdownActive, setIsCountdownActive] = useState(false);
-  const { saveResult } = useResultPersistence(STORAGE_KEY);
+  const repository = useMemo(() => new ResultsRepository(STORAGE_KEY), []);
+  const { saveResult } = useResultPersistence(repository);
 
   const { startTimer: startExposureTimer } = useExposureTimer({
     targetExposure: 0,
