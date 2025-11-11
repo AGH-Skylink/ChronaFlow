@@ -2,15 +2,15 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { TestStyles } from "@/constants/TestStyles";
 
-interface ActiveTestReproductionProps {
+interface ActiveTestReproductionInput {
   onPressIn: () => void;
   onPressOut: () => void;
 }
 
-export function ActiveTestReproduction({
+export function ActiveTestInput({
   onPressIn,
   onPressOut,
-}: ActiveTestReproductionProps) {
+}: ActiveTestReproductionInput) {
   return (
     <View style={TestStyles.testContainer}>
       <Text style={TestStyles.testText}>

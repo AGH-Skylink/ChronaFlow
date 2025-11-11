@@ -13,10 +13,6 @@ interface PassiveTestFlowProps {
   nextButtonLabel: string;
 }
 
-/**
- * Orchestrates the Passive Test flow
- * Mirrors ActiveTestFlow structure with slider-specific callbacks
- */
 export function PassiveTestFlow({
   isCountdownActive,
   onCountdownComplete,

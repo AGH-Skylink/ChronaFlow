@@ -74,7 +74,6 @@ export function useExposureBasedTestState<T extends ExposureBasedTest>(
     }
   }, []);
 
-  // Reinitialize test instance when sessionId changes
   useEffect(() => {
     testRef.current = testFactory(sessionId);
     reset();

@@ -18,9 +18,9 @@ export function useActiveTestHandlers({
   const { saveResult } = useResultPersistence(STORAGE_KEY);
 
   const { startTimer: startExposureTimer } = useExposureTimer({
-    targetExposure: 0, // Will be set dynamically
+    targetExposure: 0,
     onComplete: operations.completeExposure,
-    enabled: false, // Will be controlled manually
+    enabled: false,
   });
 
   const handleStart = useCallback(() => {

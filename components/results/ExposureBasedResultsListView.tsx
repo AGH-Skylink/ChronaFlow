@@ -1,16 +1,18 @@
 import React from "react";
 import { ScrollView, Alert, Platform } from "react-native";
-import { ActiveResult } from "@models/ActiveResult";
+import { ExposureBasedResult } from "@/src/domain/models/ExposureBasedResult";
 import { resultCardStyles } from "@/constants/resultStyles";
-import { ResultCard } from "./ResultCard";
+import { ExposureBasedResultCard } from "./ExposureBasedResultCard";
 import { useResultsOperations } from "@/context/ResultsContext";
 import { useNotesEditor } from "@/hooks/useNotesEditor";
 
-interface ResultsListViewProps {
-  results: ActiveResult[];
+interface ExposureBasedResultsListViewProps {
+  results: ExposureBasedResult[];
 }
 
-export function ResultsListView({ results }: ResultsListViewProps) {
+export function ExposureBasedResultsListView({
+  results,
+}: ExposureBasedResultsListViewProps) {
   const { deleteResult, saveNote } = useResultsOperations();
   const { isEditing, startEditing, cancelEditing } = useNotesEditor();
 
@@ -62,12 +64,12 @@ export function ResultsListView({ results }: ResultsListViewProps) {
       contentContainerStyle={resultCardStyles.scrollViewContent}
     >
       {results.map((result) => (
-        <ResultCard
+        <ExposureBasedResultCard
           key={result.id}
           result={result}
           isEditing={isEditing(result.id)}
           onEditStart={() => startEditing(result.id)}
-          onSaveNote={(noteText) => handleSaveNote(result.id, noteText)}
+          onSaveNote={(noteText: string) => handleSaveNote(result.id, noteText)}
           onCancelEdit={cancelEditing}
           onDelete={() => handleDelete(result.id)}
         />

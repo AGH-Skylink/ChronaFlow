@@ -1,18 +1,18 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ExposureBasedResult } from "@/src/domain/models/ExposureBasedResult";
+import { RegularityResult } from "@/src/domain/models/RegularityResult";
 
-export interface ExportConfig {
+export interface RegularityExportConfig {
   storageKey: string;
   csvHeader: string;
-  formatRow: (result: ExposureBasedResult) => string;
+  formatRow: (result: RegularityResult) => string;
   fileNamePrefix: string;
   dialogTitle: string;
 }
 
-export class ResultsRepository {
+export class RegularityResultsRepository {
   constructor(private storageKey: string) {}
 
-  async loadAll(): Promise<ExposureBasedResult[]> {
+  async loadAll(): Promise<RegularityResult[]> {
     try {
       const resultsJson = await AsyncStorage.getItem(this.storageKey);
       if (!resultsJson) {
@@ -21,24 +21,29 @@ export class ResultsRepository {
 
       const parsedResults = JSON.parse(resultsJson);
       return parsedResults
-        .map((data: any) =>
-          new ExposureBasedResult(
-            data.id,
-            data.timestamp,
-            data.targetDuration,
-            data.userDuration,
+        .map((data: any) => {
+          // Handle legacy data format where 'date' was used instead of 'timestamp'
+          const timestamp = data.timestamp || new Date(data.date).getTime();
+          const id = data.id || `${timestamp}-${Math.random().toString(36).slice(2, 8)}`;
+          
+          return new RegularityResult(
+            id,
+            timestamp,
+            data.avgInterval,
+            data.stdDevInterval,
+            data.tapTimestamps || [],
             data.notes || "",
             data.sessionId || null
-          )
-        )
-        .sort((a: ExposureBasedResult, b: ExposureBasedResult) => b.timestamp - a.timestamp);
+          );
+        })
+        .sort((a: RegularityResult, b: RegularityResult) => b.timestamp - a.timestamp);
     } catch (error) {
       console.error("Error loading results:", error);
       return [];
     }
   }
 
-  async save(result: ExposureBasedResult): Promise<boolean> {
+  async save(result: RegularityResult): Promise<boolean> {
     try {
       const existingResults = await this.loadAll();
       const updatedResults = [result, ...existingResults];
@@ -53,7 +58,7 @@ export class ResultsRepository {
     }
   }
 
-  async delete(id: string): Promise<ExposureBasedResult[]> {
+  async delete(id: string): Promise<RegularityResult[]> {
     try {
       const results = await this.loadAll();
       const updatedResults = results.filter((r) => r.id !== id);
@@ -68,16 +73,17 @@ export class ResultsRepository {
     }
   }
 
-  async updateNote(id: string, noteText: string): Promise<ExposureBasedResult[]> {
+  async updateNote(id: string, noteText: string): Promise<RegularityResult[]> {
     try {
       const results = await this.loadAll();
       const updatedResults = results.map((result) =>
         result.id === id
-          ? new ExposureBasedResult(
+          ? new RegularityResult(
               result.id,
               result.timestamp,
-              result.targetDuration,
-              result.userDuration,
+              result.avgInterval,
+              result.stdDevInterval,
+              result.tapTimestamps,
               noteText,
               result.sessionId
             )
@@ -103,7 +109,7 @@ export class ResultsRepository {
     }
   }
 
-  async exportToCsv(config: ExportConfig): Promise<string> {
+  async exportToCsv(config: RegularityExportConfig): Promise<string> {
     const results = await this.loadAll();
     let csvContent = config.csvHeader;
     results.forEach((result) => {

@@ -4,7 +4,6 @@ import { Countdown } from "@/components/Countdown";
 import { useRegularityTestStateContext } from "@/context/RegularityTestContext";
 import { RegularityTestPhaseContent } from "./RegularityTestPhaseContent";
 import { TestStyles } from "@/constants/TestStyles";
-import { RegularityPhase } from "@features/RegularityTest";
 
 interface RegularityTestFlowProps {
   isCountdownActive: boolean;

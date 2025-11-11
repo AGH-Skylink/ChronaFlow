@@ -4,7 +4,7 @@ import { TestStyles } from "@/constants/TestStyles";
 import { ExposureBasedPhase } from "@features/ExposureBasedTest";
 import { useActiveTestStateContext } from "@/context/ActiveTestContext";
 import { ExposureBasedTestExposure } from "@/components/exposure-based-test/ExposureBasedTestExposure";
-import { ActiveTestReproduction } from "@/components/exposure-based-test/ActiveTestReproduction";
+import { ActiveTestInput } from "@/components/active-test/ActiveTestInput";
 import { ExposureBasedTestResult } from "@/components/exposure-based-test/ExposureBasedTestResults";
 
 interface ActiveTestPhaseContentProps {
@@ -41,10 +41,7 @@ export function ActiveTestPhaseContent({
         <ExposureBasedTestExposure emoji={emoji} />
       )}
       {phase === ExposureBasedPhase.REPRODUCTION && (
-        <ActiveTestReproduction
-          onPressIn={onStartTimer}
-          onPressOut={onEndTimer}
-        />
+        <ActiveTestInput onPressIn={onStartTimer} onPressOut={onEndTimer} />
       )}
       {phase === ExposureBasedPhase.RESULTS && (
         <ExposureBasedTestResult

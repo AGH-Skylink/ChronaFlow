@@ -1,14 +1,14 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { ActiveResult } from "@models/ActiveResult";
+import { ExposureBasedResult } from "@/src/domain/models/ExposureBasedResult";
 import { resultCardStyles } from "@/constants/resultStyles";
 import { ResultRow } from "@/components/ResultRow";
 import { NotesEditor } from "@/components/NotesEditor";
 import { DeleteButton } from "@/components/TestResultComponents";
 import { formatDate } from "@/utils/results-utls";
 
-interface ResultCardProps {
-  result: ActiveResult;
+interface ExposureBasedResultCardProps {
+  result: ExposureBasedResult;
   isEditing: boolean;
   onEditStart: () => void;
   onSaveNote: (noteText: string) => void;
@@ -16,14 +16,14 @@ interface ResultCardProps {
   onDelete: () => void;
 }
 
-export function ResultCard({
+export function ExposureBasedResultCard({
   result,
   isEditing,
   onEditStart,
   onSaveNote,
   onCancelEdit,
   onDelete,
-}: ResultCardProps) {
+}: ExposureBasedResultCardProps) {
   const difference = Math.abs(result.userDuration - result.targetDuration);
 
   return (

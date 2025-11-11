@@ -9,10 +9,6 @@ interface PassiveTestInputProps {
   onSubmit: () => void;
 }
 
-/**
- * Slider-based input component for Passive Test
- * This is the ONLY unique UI component specific to Passive Test
- */
 export function PassiveTestInput({
   sliderValue,
   onSliderChange,

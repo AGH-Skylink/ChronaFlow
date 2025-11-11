@@ -7,16 +7,16 @@ import {
   LoadingState,
   EmptyState,
 } from "../../components/TestResultComponents";
-import { ResultsListView } from "@/components/results/ResultsListView";
+import { ExposureBasedResultsListView } from "@/components/results/ExposureBasedResultsListView";
 import { resultCardStyles } from "@/constants/resultStyles";
-import { ActiveResult } from "@models/ActiveResult";
+import { ExposureBasedResult } from "@/src/domain/models/ExposureBasedResult";
 
 const STORAGE_KEY = "activeTestResults";
 const EXPORT_CONFIG = {
   storageKey: STORAGE_KEY,
   csvHeader:
     "Day,Time,Session Id,Target Duration (ms),Your Duration (ms),Notes\n",
-  formatRow: (result: ActiveResult) => {
+  formatRow: (result: ExposureBasedResult) => {
     const date = new Date(result.timestamp).toLocaleString();
     const [day, time] = date.split(", ");
     return `"${day}","${time}",${result.sessionId || ""},${
@@ -42,7 +42,7 @@ function ActiveResultsContent() {
           onTakeTest={() => router.push("./pages/active-test-page")}
         />
       ) : (
-        <ResultsListView results={results} />
+        <ExposureBasedResultsListView results={results} />
       )}
       <StatusBar style="light" />
     </View>

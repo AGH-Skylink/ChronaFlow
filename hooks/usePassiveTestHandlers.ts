@@ -9,10 +9,6 @@ interface UsePassiveTestHandlersProps {
   onComplete?: () => void;
 }
 
-/**
- * Orchestrates handlers for passive test interactions
- * Manages countdown, exposure timer, slider input, and result submission
- */
 export function usePassiveTestHandlers({
   onComplete,
 }: UsePassiveTestHandlersProps = {}) {
@@ -20,9 +16,8 @@ export function usePassiveTestHandlers({
   const [isCountdownActive, setIsCountdownActive] = useState(false);
   const { saveResult } = useResultPersistence(STORAGE_KEY);
 
-  // Exposure timer will be started in handleCountdownComplete
   const { startTimer: startExposureTimer } = useExposureTimer({
-    targetExposure: 0, // Will be set dynamically
+    targetExposure: 0,
     onComplete: operations.completeExposure,
     enabled: false,
   });

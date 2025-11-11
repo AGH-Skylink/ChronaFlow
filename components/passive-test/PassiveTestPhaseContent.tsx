@@ -15,11 +15,6 @@ interface PassiveTestPhaseContentProps {
   nextButtonLabel: string;
 }
 
-/**
- * Routes to the appropriate phase component for Passive Test
- * Reuses ExposureBasedTestExposure and ExposureBasedTestResults components
- * Only PassiveTestInput is unique to this test type
- */
 export function PassiveTestPhaseContent({
   isCountdownActive,
   onSliderChange,

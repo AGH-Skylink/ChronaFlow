@@ -72,17 +72,14 @@ export class RegularityTest {
       throw new Error("Not enough taps to analyze results");
     }
 
-    // Calculate intervals between taps
     const intervals: number[] = [];
     for (let i = 1; i < this._tapTimestamps.length; i++) {
       intervals.push(this._tapTimestamps[i] - this._tapTimestamps[i - 1]);
     }
 
-    // Calculate average interval (in seconds)
     const sum = intervals.reduce((prev, curr) => prev + curr, 0);
     this._avgInterval = sum / intervals.length / 1000;
 
-    // Calculate standard deviation (in seconds)
     const squaredDiffs = intervals.map((interval) => {
       const diff = interval - this._avgInterval * 1000;
       return diff * diff;
@@ -90,7 +87,6 @@ export class RegularityTest {
     const squaredDiffSum = squaredDiffs.reduce((prev, curr) => prev + curr, 0);
     this._stdDevInterval = Math.sqrt(squaredDiffSum / intervals.length) / 1000;
 
-    // Convert to relative timestamps (from first tap)
     const relativeTapTimestamps = this._tapTimestamps.map(
       (t) => t - this._tapTimestamps[0]
     );

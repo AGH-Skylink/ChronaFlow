@@ -10,10 +10,6 @@ interface RegularityTestTappingAreaProps {
   isActive: boolean;
 }
 
-/**
- * Tap-based interaction area for Regularity Test
- * This is the ONLY unique UI component specific to Regularity Test
- */
 export function RegularityTestTappingArea({
   tapCount,
   onTap,

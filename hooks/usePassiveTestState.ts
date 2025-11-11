@@ -3,21 +3,15 @@ import { PassiveTest } from "@features/PassiveTest";
 import { useExposureBasedTestState } from "./useExposureBasedTestState";
 import { ExposureBasedResult } from "@models/ExposureBasedResult";
 
-/**
- * Passive test state management hook
- * Wraps the generic useExposureBasedTestState and adds slider-specific state
- */
+
 export function usePassiveTestState(sessionId: string | null) {
-  // Get base state from generic hook
   const baseState = useExposureBasedTestState(
     (sid) => new PassiveTest(sid),
     sessionId
   );
 
-  // Add Passive-specific state: slider value
   const [sliderValue, setSliderValueState] = useState(1000);
 
-  // Passive-specific operation: set slider value
   const setSliderValue = useCallback(
     (value: number) => {
       (baseState.test as PassiveTest).setSliderValue(value);
@@ -26,7 +20,6 @@ export function usePassiveTestState(sessionId: string | null) {
     [baseState.test]
   );
 
-  // Passive-specific operation: calculate results
   const calculateResults = useCallback(() => {
     try {
       const test = baseState.test as PassiveTest;
@@ -40,13 +33,11 @@ export function usePassiveTestState(sessionId: string | null) {
     }
   }, [baseState]);
 
-  // Override reset to also reset slider value
   const reset = useCallback(() => {
     baseState.reset();
     setSliderValueState(1000);
   }, [baseState]);
 
-  // Return combined state
   return {
     test: baseState.test as PassiveTest,
     state: baseState.state,

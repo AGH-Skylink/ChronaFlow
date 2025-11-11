@@ -16,11 +16,6 @@ interface RegularityTestPhaseContentProps {
   stdDevInterval: number;
 }
 
-/**
- * Routes to the appropriate phase component for Regularity Test
- * Reuses ResultsCard and ResultRow components
- * Only RegularityTestTappingArea is unique to this test type
- */
 export function RegularityTestPhaseContent({
   isCountdownActive,
   onTap,
