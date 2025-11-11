@@ -10,6 +10,7 @@ interface RegularityTestState {
   isComplete: boolean;
   avgInterval: number;
   stdDevInterval: number;
+  testName: string;
 }
 
 interface RegularityTestOperations {
@@ -46,6 +47,7 @@ export function RegularityTestProvider({
       isComplete: testState.isComplete,
       avgInterval: testState.avgInterval,
       stdDevInterval: testState.stdDevInterval,
+      testName: "Regularity Test",
     },
     operations: {
       startTest: testState.startTest,

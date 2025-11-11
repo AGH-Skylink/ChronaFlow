@@ -3,19 +3,19 @@ import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { TestStyles } from "@/constants/TestStyles";
 import { ResultRow } from "@/components/ResultRow";
 
-interface ActiveTestResultsProps {
+interface ExposureBasedTestResultsProps {
   targetExposure: number;
   holdDuration: number | null;
   onNext: () => void;
   nextButtonLabel?: string;
 }
 
-export function ActiveTestResults({
+export function ExposureBasedTestResult({
   targetExposure,
   holdDuration,
   onNext,
   nextButtonLabel = "Try Again",
-}: ActiveTestResultsProps) {
+}: ExposureBasedTestResultsProps) {
   const difference =
     holdDuration === null ? null : Math.abs(holdDuration - targetExposure);
 

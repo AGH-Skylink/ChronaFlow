@@ -5,7 +5,6 @@ import { ExposureBasedTestHeader } from "@/components/exposure-based-test/Exposu
 import { PassiveTestPhaseContent } from "./PassiveTestPhaseContent";
 
 interface PassiveTestFlowProps {
-  testName: string;
   isCountdownActive: boolean;
   onCountdownComplete: () => void;
   onSliderChange: (value: number) => void;
@@ -19,7 +18,6 @@ interface PassiveTestFlowProps {
  * Mirrors ActiveTestFlow structure with slider-specific callbacks
  */
 export function PassiveTestFlow({
-  testName,
   isCountdownActive,
   onCountdownComplete,
   onSliderChange,
@@ -27,7 +25,7 @@ export function PassiveTestFlow({
   onNext,
   nextButtonLabel,
 }: PassiveTestFlowProps) {
-  const { state: phase } = usePassiveTestStateContext();
+  const { state: phase, testName } = usePassiveTestStateContext();
 
   return (
     <>

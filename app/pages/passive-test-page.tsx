@@ -15,7 +15,7 @@ import {
 } from "@/context/PassiveTestContext";
 import { usePassiveTestHandlers } from "@/hooks/usePassiveTestHandlers";
 import { useTestPageCleanup } from "@/hooks/useTestPageCleanup";
-import { ActiveTestStart } from "@/components/exposure-based-test/ExposureBasedTestStart";
+import { TestStart } from "@/components/exposure-based-test/ExposureBasedTestStart";
 import { PassiveTestFlow } from "@/components/passive-test/PassiveTestFlow";
 
 interface PassiveTestProps {
@@ -24,7 +24,7 @@ interface PassiveTestProps {
 }
 
 function PassiveTestContent({ onComplete }: { onComplete?: () => void }) {
-  const { state } = usePassiveTestStateContext();
+  const { state, testName } = usePassiveTestStateContext();
   const { reset } = usePassiveTestOperations();
   const { dismissKeyboard } = useTestPageCleanup(reset);
 
@@ -47,10 +47,13 @@ function PassiveTestContent({ onComplete }: { onComplete?: () => void }) {
       <TouchableWithoutFeedback onPress={dismissKeyboard}>
         <View style={TestStyles.container}>
           {!testStarted ? (
-            <ActiveTestStart onStart={handleStart} testName="Passive Test" />
+            <TestStart
+              onStart={handleStart}
+              testName={testName}
+              instructions="You will see an emoji for a certain duration. Try to remember how long it appears."
+            />
           ) : (
             <PassiveTestFlow
-              testName="Passive Test"
               isCountdownActive={isCountdownActive}
               onCountdownComplete={handleCountdownComplete}
               onSliderChange={handleSliderChange}

@@ -3,9 +3,9 @@ import { View } from "react-native";
 import { TestStyles } from "@/constants/TestStyles";
 import { ExposureBasedPhase } from "@features/ExposureBasedTest";
 import { useActiveTestStateContext } from "@/context/ActiveTestContext";
-import { ActiveTestExposure } from "@/components/exposure-based-test/ExposureBasedTestExposure";
+import { ExposureBasedTestExposure } from "@/components/exposure-based-test/ExposureBasedTestExposure";
 import { ActiveTestReproduction } from "@/components/exposure-based-test/ActiveTestReproduction";
-import { ActiveTestResults } from "@/components/exposure-based-test/ExposureBasedTestResults";
+import { ExposureBasedTestResult } from "@/components/exposure-based-test/ExposureBasedTestResults";
 
 interface ActiveTestPhaseContentProps {
   isCountdownActive: boolean;
@@ -38,7 +38,7 @@ export function ActiveTestPhaseContent({
       ]}
     >
       {phase === ExposureBasedPhase.EXPOSURE && !isCountdownActive && (
-        <ActiveTestExposure emoji={emoji} />
+        <ExposureBasedTestExposure emoji={emoji} />
       )}
       {phase === ExposureBasedPhase.REPRODUCTION && (
         <ActiveTestReproduction
@@ -47,7 +47,7 @@ export function ActiveTestPhaseContent({
         />
       )}
       {phase === ExposureBasedPhase.RESULTS && (
-        <ActiveTestResults
+        <ExposureBasedTestResult
           targetExposure={targetExposure}
           holdDuration={holdDuration}
           onNext={onNext}

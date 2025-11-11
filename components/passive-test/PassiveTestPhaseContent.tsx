@@ -3,9 +3,9 @@ import { View } from "react-native";
 import { TestStyles } from "@/constants/TestStyles";
 import { ExposureBasedPhase } from "@features/ExposureBasedTest";
 import { usePassiveTestStateContext } from "@/context/PassiveTestContext";
-import { ActiveTestExposure } from "@/components/exposure-based-test/ExposureBasedTestExposure";
+import { ExposureBasedTestExposure } from "@/components/exposure-based-test/ExposureBasedTestExposure";
 import { PassiveTestInput } from "./PassiveTestInput";
-import { ActiveTestResults } from "@/components/exposure-based-test/ExposureBasedTestResults";
+import { ExposureBasedTestResult } from "@/components/exposure-based-test/ExposureBasedTestResults";
 
 interface PassiveTestPhaseContentProps {
   isCountdownActive: boolean;
@@ -44,7 +44,7 @@ export function PassiveTestPhaseContent({
       ]}
     >
       {phase === ExposureBasedPhase.EXPOSURE && !isCountdownActive && (
-        <ActiveTestExposure emoji={emoji} />
+        <ExposureBasedTestExposure emoji={emoji} />
       )}
       {phase === ExposureBasedPhase.REPRODUCTION && (
         <PassiveTestInput
@@ -54,7 +54,7 @@ export function PassiveTestPhaseContent({
         />
       )}
       {phase === ExposureBasedPhase.RESULTS && (
-        <ActiveTestResults
+        <ExposureBasedTestResult
           targetExposure={targetExposure}
           holdDuration={sliderValue}
           onNext={onNext}

@@ -9,6 +9,7 @@ interface ActiveTestState {
   targetExposure: number;
   emoji: string;
   holdDuration: number | null;
+  testName: string;
 }
 
 interface ActiveTestOperations {
@@ -43,6 +44,7 @@ export function ActiveTestProvider({
         targetExposure: testState.targetExposure,
         emoji: testState.emoji,
         holdDuration: testState.holdDuration,
+        testName: "Active Test",
       },
       operations: {
         startTest: testState.startTest,

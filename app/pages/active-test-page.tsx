@@ -15,7 +15,7 @@ import {
 } from "@/context/ActiveTestContext";
 import { useActiveTestHandlers } from "@/hooks/useActiveTestHandlers";
 import { useTestPageCleanup } from "@/hooks/useTestPageCleanup";
-import { ActiveTestStart } from "@/components/exposure-based-test/ExposureBasedTestStart";
+import { TestStart } from "@/components/exposure-based-test/ExposureBasedTestStart";
 import { ActiveTestFlow } from "@/components/active-test/ActiveTestFlow";
 
 interface ActiveTestProps {
@@ -24,7 +24,7 @@ interface ActiveTestProps {
 }
 
 function ActiveTestContent({ onComplete }: { onComplete?: () => void }) {
-  const { state } = useActiveTestStateContext();
+  const { state, testName } = useActiveTestStateContext();
   const { reset } = useActiveTestOperations();
   const { dismissKeyboard } = useTestPageCleanup(reset);
 
@@ -46,10 +46,13 @@ function ActiveTestContent({ onComplete }: { onComplete?: () => void }) {
       <TouchableWithoutFeedback onPress={dismissKeyboard}>
         <View style={TestStyles.container}>
           {!testStarted ? (
-            <ActiveTestStart onStart={handleStart} />
+            <TestStart
+              onStart={handleStart}
+              testName={testName}
+              instructions="You will see an emoji for a certain duration. Press and hold the screen to match the time you remember."
+            />
           ) : (
             <ActiveTestFlow
-              testName="Active Test"
               isCountdownActive={isCountdownActive}
               onCountdownComplete={handleCountdownComplete}
               onStartTimer={handleStart}

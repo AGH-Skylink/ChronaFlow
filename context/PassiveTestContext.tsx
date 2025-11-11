@@ -9,6 +9,7 @@ interface PassiveTestState {
   targetExposure: number;
   emoji: string;
   sliderValue: number;
+  testName: string;
 }
 
 interface PassiveTestOperations {
@@ -45,6 +46,7 @@ export function PassiveTestProvider({
       targetExposure: testState.targetExposure,
       emoji: testState.emoji,
       sliderValue: testState.sliderValue,
+      testName: "Passive Test",
     },
     operations: {
       startTest: testState.startTest,

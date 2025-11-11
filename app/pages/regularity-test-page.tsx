@@ -15,7 +15,7 @@ import {
 } from "@/context/RegularityTestContext";
 import { useRegularityTestHandlers } from "@/hooks/useRegularityTestHandlers";
 import { useTestPageCleanup } from "@/hooks/useTestPageCleanup";
-import { ActiveTestStart } from "@/components/exposure-based-test/ExposureBasedTestStart";
+import { TestStart } from "@/components/exposure-based-test/ExposureBasedTestStart";
 import { RegularityTestFlow } from "@/components/regularity-test/RegularityTestFlow";
 
 interface RegularityTestProps {
@@ -24,7 +24,7 @@ interface RegularityTestProps {
 }
 
 function RegularityTestContent({ onComplete }: { onComplete?: () => void }) {
-  const { state, avgInterval, stdDevInterval } =
+  const { state, avgInterval, stdDevInterval, testName } =
     useRegularityTestStateContext();
   const { reset } = useRegularityTestOperations();
   const { dismissKeyboard } = useTestPageCleanup(reset);
@@ -47,14 +47,13 @@ function RegularityTestContent({ onComplete }: { onComplete?: () => void }) {
       <TouchableWithoutFeedback onPress={dismissKeyboard}>
         <View style={TestStyles.container}>
           {!testStarted ? (
-            <ActiveTestStart
+            <TestStart
               onStart={handleStart}
-              testName="Regularity Test"
+              testName={testName}
               instructions="Try to tap the screen at regular 1-second intervals. You will need to complete 25 taps to finish the test."
             />
           ) : (
             <RegularityTestFlow
-              testName="Regularity Test"
               isCountdownActive={isCountdownActive}
               onCountdownComplete={handleCountdownComplete}
               onTap={handleTap}

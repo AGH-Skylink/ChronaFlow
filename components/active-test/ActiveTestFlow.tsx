@@ -5,7 +5,6 @@ import { ExposureBasedTestHeader } from "@/components/exposure-based-test/Exposu
 import { ActiveTestPhaseContent } from "./ActiveTestPhaseContent";
 
 interface ActiveTestFlowProps {
-  testName: string;
   isCountdownActive: boolean;
   onCountdownComplete: () => void;
   onStartTimer: () => void;
@@ -15,7 +14,6 @@ interface ActiveTestFlowProps {
 }
 
 export function ActiveTestFlow({
-  testName,
   isCountdownActive,
   onCountdownComplete,
   onStartTimer,
@@ -23,7 +21,7 @@ export function ActiveTestFlow({
   onNext,
   nextButtonLabel,
 }: ActiveTestFlowProps) {
-  const { state: phase } = useActiveTestStateContext();
+  const { state: phase, testName } = useActiveTestStateContext();
 
   return (
     <>

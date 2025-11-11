@@ -7,7 +7,6 @@ import { TestStyles } from "@/constants/TestStyles";
 import { RegularityPhase } from "@features/RegularityTest";
 
 interface RegularityTestFlowProps {
-  testName: string;
   isCountdownActive: boolean;
   onCountdownComplete: () => void;
   onTap: () => void;
@@ -17,12 +16,7 @@ interface RegularityTestFlowProps {
   stdDevInterval: number;
 }
 
-/**
- * Orchestrates the Regularity Test flow
- * Similar structure to Active/Passive test flows
- */
 export function RegularityTestFlow({
-  testName,
   isCountdownActive,
   onCountdownComplete,
   onTap,
@@ -31,7 +25,11 @@ export function RegularityTestFlow({
   avgInterval,
   stdDevInterval,
 }: RegularityTestFlowProps) {
-  const { state: phase, isComplete } = useRegularityTestStateContext();
+  const {
+    state: phase,
+    isComplete,
+    testName,
+  } = useRegularityTestStateContext();
 
   return (
     <>

@@ -11,8 +11,8 @@ import { getSessionById } from "@/utils/sessionUtils";
 import { Session, SessionBlock } from "@/types/session";
 import { Ionicons } from "@expo/vector-icons";
 import ActiveTest from "./active-test-page";
-import PassiveTest from "./passive-test";
-import RegularityTest from "./regularity-test";
+import PassiveTest from "./passive-test-page";
+import RegularityTest from "./regularity-test-page";
 import { TestStyles } from "@/constants/TestStyles";
 import { COLORS, typography, layout, buttons } from "@/constants/Styles";
 
@@ -204,14 +204,14 @@ declare module "./active-test-page" {
   }
 }
 
-declare module "./passive-test" {
+declare module "./passive-test-page" {
   interface Props {
     onComplete?: () => void;
     sessionId?: string | null;
   }
 }
 
-declare module "./regularity-test" {
+declare module "./regularity-test-page" {
   interface Props {
     onComplete?: () => void;
     sessionId?: string | null;
