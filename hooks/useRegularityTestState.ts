@@ -2,10 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { RegularityTest, RegularityPhase } from "@features/RegularityTest";
 import { RegularityResult } from "@models/RegularityResult";
 
-/**
- * Regularity test state management hook
- * Manages RegularityTest instance and syncs to React state
- */
 export function useRegularityTestState(sessionId: string | null) {
   const testRef = useRef(new RegularityTest(sessionId));
   const [state, setState] = useState(testRef.current.state);
@@ -73,7 +69,6 @@ export function useRegularityTestState(sessionId: string | null) {
     }
   }, [syncState]);
 
-  // Reinitialize test instance when sessionId changes
   useEffect(() => {
     testRef.current = new RegularityTest(sessionId);
     reset();

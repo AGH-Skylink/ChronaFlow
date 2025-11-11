@@ -1,0 +1,111 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+export interface IResult {
+  id: string;
+  timestamp: number;
+  notes?: string;
+  sessionId?: string | null;
+}
+
+export interface ExportConfigBase {
+  storageKey: string;
+  csvHeader: string;
+  formatRow: (result: IResult) => string;
+  fileNamePrefix: string;
+  dialogTitle: string;
+}
+
+/**
+ * Generic base class for result repositories with common CRUD and export operations
+ */
+export abstract class BaseResultsRepository<T extends IResult> {
+  constructor(protected storageKey: string) {}
+
+  protected abstract parseResult(data: any): T;
+
+  async loadAll(): Promise<T[]> {
+    try {
+      const resultsJson = await AsyncStorage.getItem(this.storageKey);
+      if (!resultsJson) {
+        return [];
+      }
+
+      const parsedResults = JSON.parse(resultsJson);
+      return parsedResults
+        .map((data: any) => this.parseResult(data))
+        .sort((a: T, b: T) => b.timestamp - a.timestamp);
+    } catch (error) {
+      console.error("Error loading results:", error);
+      return [];
+    }
+  }
+
+  async save(result: T): Promise<boolean> {
+    try {
+      const existingResults = await this.loadAll();
+      const updatedResults = [result, ...existingResults];
+      await AsyncStorage.setItem(
+        this.storageKey,
+        JSON.stringify(updatedResults)
+      );
+      return true;
+    } catch (error) {
+      console.error("Error saving result:", error);
+      return false;
+    }
+  }
+
+  async delete(id: string): Promise<T[]> {
+    try {
+      const results = await this.loadAll();
+      const updatedResults = results.filter((r) => r.id !== id);
+      await AsyncStorage.setItem(
+        this.storageKey,
+        JSON.stringify(updatedResults)
+      );
+      return updatedResults;
+    } catch (error) {
+      console.error("Error deleting result:", error);
+      throw error;
+    }
+  }
+
+  async updateNote(id: string, noteText: string): Promise<T[]> {
+    try {
+      const results = await this.loadAll();
+      const updatedResults = results.map((result) =>
+        result.id === id
+          ? this.createResultWithNote(result, noteText)
+          : result
+      );
+      await AsyncStorage.setItem(
+        this.storageKey,
+        JSON.stringify(updatedResults)
+      );
+      return updatedResults;
+    } catch (error) {
+      console.error("Error updating note:", error);
+      throw error;
+    }
+  }
+
+  protected abstract createResultWithNote(result: T, noteText: string): T;
+
+  async clearAll(): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(this.storageKey);
+    } catch (error) {
+      console.error("Error clearing results:", error);
+      throw error;
+    }
+  }
+
+  async exportToCsv(config: ExportConfigBase): Promise<string> {
+    const results = await this.loadAll();
+    let csvContent = config.csvHeader;
+    results.forEach((result) => {
+      csvContent += config.formatRow(result);
+    });
+    return csvContent;
+  }
+}

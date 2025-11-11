@@ -1,114 +1,34 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ExposureBasedResult } from "@/src/domain/models/ExposureBasedResult";
+import {
+  BaseResultsRepository,
+  ExportConfigBase,
+} from "./BaseResultsRepository";
 
-export interface ExportConfig {
-  storageKey: string;
-  csvHeader: string;
-  formatRow: (result: ExposureBasedResult) => string;
-  fileNamePrefix: string;
-  dialogTitle: string;
-}
+export type ExportConfig = ExportConfigBase;
 
-export class ResultsRepository {
-  constructor(private storageKey: string) {}
-
-  async loadAll(): Promise<ExposureBasedResult[]> {
-    try {
-      const resultsJson = await AsyncStorage.getItem(this.storageKey);
-      if (!resultsJson) {
-        return [];
-      }
-
-      const parsedResults = JSON.parse(resultsJson);
-      return parsedResults
-        .map((data: any) =>
-          new ExposureBasedResult(
-            data.id,
-            data.timestamp,
-            data.targetDuration,
-            data.userDuration,
-            data.notes || "",
-            data.sessionId || null
-          )
-        )
-        .sort((a: ExposureBasedResult, b: ExposureBasedResult) => b.timestamp - a.timestamp);
-    } catch (error) {
-      console.error("Error loading results:", error);
-      return [];
-    }
+export class ResultsRepository extends BaseResultsRepository<ExposureBasedResult> {
+  protected parseResult(data: any): ExposureBasedResult {
+    return new ExposureBasedResult(
+      data.id,
+      data.timestamp,
+      data.targetDuration,
+      data.userDuration,
+      data.notes || "",
+      data.sessionId || null
+    );
   }
 
-  async save(result: ExposureBasedResult): Promise<boolean> {
-    try {
-      const existingResults = await this.loadAll();
-      const updatedResults = [result, ...existingResults];
-      await AsyncStorage.setItem(
-        this.storageKey,
-        JSON.stringify(updatedResults)
-      );
-      return true;
-    } catch (error) {
-      console.error("Error saving result:", error);
-      return false;
-    }
-  }
-
-  async delete(id: string): Promise<ExposureBasedResult[]> {
-    try {
-      const results = await this.loadAll();
-      const updatedResults = results.filter((r) => r.id !== id);
-      await AsyncStorage.setItem(
-        this.storageKey,
-        JSON.stringify(updatedResults)
-      );
-      return updatedResults;
-    } catch (error) {
-      console.error("Error deleting result:", error);
-      throw error;
-    }
-  }
-
-  async updateNote(id: string, noteText: string): Promise<ExposureBasedResult[]> {
-    try {
-      const results = await this.loadAll();
-      const updatedResults = results.map((result) =>
-        result.id === id
-          ? new ExposureBasedResult(
-              result.id,
-              result.timestamp,
-              result.targetDuration,
-              result.userDuration,
-              noteText,
-              result.sessionId
-            )
-          : result
-      );
-      await AsyncStorage.setItem(
-        this.storageKey,
-        JSON.stringify(updatedResults)
-      );
-      return updatedResults;
-    } catch (error) {
-      console.error("Error updating note:", error);
-      throw error;
-    }
-  }
-
-  async clearAll(): Promise<void> {
-    try {
-      await AsyncStorage.removeItem(this.storageKey);
-    } catch (error) {
-      console.error("Error clearing results:", error);
-      throw error;
-    }
-  }
-
-  async exportToCsv(config: ExportConfig): Promise<string> {
-    const results = await this.loadAll();
-    let csvContent = config.csvHeader;
-    results.forEach((result) => {
-      csvContent += config.formatRow(result);
-    });
-    return csvContent;
+  protected createResultWithNote(
+    result: ExposureBasedResult,
+    noteText: string
+  ): ExposureBasedResult {
+    return new ExposureBasedResult(
+      result.id,
+      result.timestamp,
+      result.targetDuration,
+      result.userDuration,
+      noteText,
+      result.sessionId
+    );
   }
 }

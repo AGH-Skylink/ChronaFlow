@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useLayoutEffect } from "react";
 import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { useRouter } from "expo-router";
+import { useRouter, useNavigation } from "expo-router";
 import {
   RegularityResultsProvider,
   useRegularityResultsState,
@@ -13,6 +13,7 @@ import {
 import { RegularityResultsListView } from "@/components/results/RegularityResultsListView";
 import { resultCardStyles } from "@/constants/resultStyles";
 import { RegularityResult } from "@/src/domain/models/RegularityResult";
+import { RegularityResultsMenu } from "@/components/ResultsExtraOptionsMenu";
 
 const STORAGE_KEY = "regularityTestResults";
 const TAP_COUNT = 25;
@@ -43,7 +44,14 @@ const EXPORT_CONFIG = {
 
 function RegularityResultsContent() {
   const router = useRouter();
+  const navigation = useNavigation();
   const { results, loading } = useRegularityResultsState();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => <RegularityResultsMenu />,
+    });
+  }, [navigation]);
 
   return (
     <View style={resultCardStyles.container}>

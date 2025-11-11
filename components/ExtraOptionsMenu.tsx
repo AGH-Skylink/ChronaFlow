@@ -6,25 +6,22 @@ import {
   StyleSheet,
   Animated,
   Modal,
-  TouchableWithoutFeedback,
   Pressable,
   Alert,
   Platform,
 } from "react-native";
 import { useColorScheme } from "./useColorScheme";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useResultsOperations } from "@/context/ResultsContext";
-import {
-  exportRegularityResults,
-  clearRegularityResults,
-} from "@/app/pages/regularity-results";
-import {
-  exportPassiveResults,
-  clearPassiveResults,
-} from "@/app/pages/passive-results";
-import { usePathname } from "expo-router";
 
-export function ExtraOptionsMenu() {
+interface ExtraOptionsMenuProps {
+  onExport: () => Promise<void>;
+  onClearAll: () => Promise<void>;
+}
+
+export function ExtraOptionsMenu({
+  onExport,
+  onClearAll,
+}: ExtraOptionsMenuProps) {
   const colorScheme = useColorScheme();
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [buttonLayout, setButtonLayout] = useState({
@@ -34,16 +31,6 @@ export function ExtraOptionsMenu() {
     height: 0,
   });
   const scaleAnim = useRef(new Animated.Value(0)).current;
-  const pathname = usePathname();
-
-  // Try to get context operations (will be available for active-results)
-  let contextOperations;
-  try {
-    contextOperations = useResultsOperations();
-  } catch {
-    // Context not available (e.g., passive or regularity results)
-    contextOperations = null;
-  }
 
   const toggleMenu = () => {
     if (isMenuVisible) {
@@ -64,13 +51,7 @@ export function ExtraOptionsMenu() {
 
   const handleExportPress = async () => {
     try {
-      if (pathname?.includes("active-results") && contextOperations) {
-        await contextOperations.exportResults();
-      } else if (pathname?.includes("passive-results")) {
-        await exportPassiveResults();
-      } else if (pathname?.includes("regularity-results")) {
-        await exportRegularityResults();
-      }
+      await onExport();
     } catch (error) {
       console.error("Error exporting results:", error);
     }
@@ -81,13 +62,7 @@ export function ExtraOptionsMenu() {
 
     const clearAction = async () => {
       try {
-        if (pathname?.includes("active-results") && contextOperations) {
-          await contextOperations.clearAll();
-        } else if (pathname?.includes("passive-results")) {
-          clearPassiveResults();
-        } else if (pathname?.includes("regularity-results")) {
-          clearRegularityResults();
-        }
+        await onClearAll();
       } catch (error) {
         console.error("Error clearing results:", error);
       }
@@ -143,7 +118,7 @@ export function ExtraOptionsMenu() {
                   transform: [{ scale: scaleAnim }],
                   opacity: scaleAnim,
                   top: buttonLayout.y + buttonLayout.height + 5,
-                  right: 20, // Adjust based on your layout
+                  right: 20,
                 },
               ]}
             >

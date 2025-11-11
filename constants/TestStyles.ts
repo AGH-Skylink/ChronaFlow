@@ -169,7 +169,6 @@ export const TestStyles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  // Progress tracking
   progressContainer: {
     height: 8,
     width: 200,
@@ -182,7 +181,6 @@ export const TestStyles = StyleSheet.create({
     backgroundColor: COLORS.primary,
   },
 
-  // Start container
   startContainer: {
     flex: 1,
     justifyContent: "center",

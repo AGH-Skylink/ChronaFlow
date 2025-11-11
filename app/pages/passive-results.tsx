@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useLayoutEffect } from "react";
 import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { useRouter } from "expo-router";
+import { useRouter, useNavigation } from "expo-router";
 import { ResultsProvider, useResultsState } from "@/context/ResultsContext";
 import {
   LoadingState,
@@ -10,6 +10,7 @@ import {
 import { ExposureBasedResultsListView } from "@/components/results/ExposureBasedResultsListView";
 import { resultCardStyles } from "@/constants/resultStyles";
 import { ExposureBasedResult } from "@/src/domain/models/ExposureBasedResult";
+import { ExposureBasedResultsMenu } from "@/components/ResultsExtraOptionsMenu";
 
 const STORAGE_KEY = "passiveTestResults";
 const EXPORT_CONFIG = {
@@ -29,7 +30,14 @@ const EXPORT_CONFIG = {
 
 function PassiveResultsContent() {
   const router = useRouter();
+  const navigation = useNavigation();
   const { results, loading } = useResultsState();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => <ExposureBasedResultsMenu />,
+    });
+  }, [navigation]);
 
   return (
     <View style={resultCardStyles.container}>
