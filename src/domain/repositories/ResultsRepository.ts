@@ -4,9 +4,15 @@ import {
   ExportConfigBase,
 } from "./BaseResultsRepository";
 
+import { IKeyValueStore } from "@/src/application/ports/IKeyValueStore";
+
 export type ExportConfig = ExportConfigBase<ExposureBasedResult>;
 
 export class ResultsRepository extends BaseResultsRepository<ExposureBasedResult> {
+  constructor(storageKey: string, storage: IKeyValueStore) {
+    super(storageKey, storage);
+  }
+
   protected parseResult(data: any): ExposureBasedResult {
     return new ExposureBasedResult(
       data.id,

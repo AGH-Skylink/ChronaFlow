@@ -4,6 +4,7 @@ import { useActiveTestOperations } from "@/context/ActiveTestContext";
 import { useExposureTimer } from "./useExposureTimer";
 import { useResultPersistence } from "./useResultPersistence";
 import { ResultsRepository } from "@/src/domain/repositories/ResultsRepository";
+import { AsyncStorageAdapter } from "@/src/infrastructure/storage/AsyncStorageAdapter";
 
 const STORAGE_KEY = "activeTestResults";
 
@@ -16,7 +17,10 @@ export function useActiveTestHandlers({
 }: UseActiveTestHandlersProps = {}) {
   const operations = useActiveTestOperations();
   const [isCountdownActive, setIsCountdownActive] = useState(false);
-  const repository = useMemo(() => new ResultsRepository(STORAGE_KEY), []);
+  const repository = useMemo(() => {
+    const storage = new AsyncStorageAdapter();
+    return new ResultsRepository(STORAGE_KEY, storage);
+  }, []);
   const { saveResult } = useResultPersistence(repository);
 
   const { startTimer: startExposureTimer } = useExposureTimer({

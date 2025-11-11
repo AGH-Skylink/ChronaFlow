@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { IKeyValueStore } from "@/src/application/ports/IKeyValueStore";
 
 export interface IResult {
   id: string;
@@ -15,13 +15,16 @@ export interface ExportConfigBase<T extends IResult> {
   dialogTitle: string;
 }
 export abstract class BaseResultsRepository<T extends IResult> {
-  constructor(protected storageKey: string) {}
+  constructor(
+    protected storageKey: string,
+    protected storage: IKeyValueStore
+  ) {}
 
   protected abstract parseResult(data: any): T;
 
   async loadAll(): Promise<T[]> {
     try {
-      const resultsJson = await AsyncStorage.getItem(this.storageKey);
+      const resultsJson = await this.storage.getItem(this.storageKey);
       if (!resultsJson) {
         return [];
       }
@@ -40,7 +43,7 @@ export abstract class BaseResultsRepository<T extends IResult> {
     try {
       const existingResults = await this.loadAll();
       const updatedResults = [result, ...existingResults];
-      await AsyncStorage.setItem(
+      await this.storage.setItem(
         this.storageKey,
         JSON.stringify(updatedResults)
       );
@@ -55,7 +58,7 @@ export abstract class BaseResultsRepository<T extends IResult> {
     try {
       const results = await this.loadAll();
       const updatedResults = results.filter((r) => r.id !== id);
-      await AsyncStorage.setItem(
+      await this.storage.setItem(
         this.storageKey,
         JSON.stringify(updatedResults)
       );
@@ -74,7 +77,7 @@ export abstract class BaseResultsRepository<T extends IResult> {
           ? this.createResultWithNote(result, noteText)
           : result
       );
-      await AsyncStorage.setItem(
+      await this.storage.setItem(
         this.storageKey,
         JSON.stringify(updatedResults)
       );
@@ -89,7 +92,7 @@ export abstract class BaseResultsRepository<T extends IResult> {
 
   async clearAll(): Promise<void> {
     try {
-      await AsyncStorage.removeItem(this.storageKey);
+      await this.storage.removeItem(this.storageKey);
     } catch (error) {
       console.error("Error clearing results:", error);
       throw error;

@@ -1,15 +1,52 @@
 import React, { useRef } from "react";
-import { StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import {
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Platform,
+  Alert,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { Text, View } from "@/components/Themed";
 import { StatusBar } from "expo-status-bar";
 import { TestCard } from "@/components/TestCard";
 import { ExportService } from "@/src/application/services/ExportService";
 import { FontAwesome } from "@expo/vector-icons";
+import { AsyncStorageAdapter } from "@/src/infrastructure/storage/AsyncStorageAdapter";
+import { ResultsRepository } from "@/src/domain/repositories/ResultsRepository";
+import { RegularityResultsRepository } from "@/src/domain/repositories/RegularityResultsRepository";
+import { SessionRepository } from "@/src/domain/repositories/SessionRepository";
+import { WebFileSharer } from "@/src/infrastructure/export/WebFileSharer";
+import { MobileFileSharer } from "@/src/infrastructure/export/MobileFileSharer";
+import {
+  NoResultsError,
+  SharingUnavailableError,
+} from "@/src/application/errors/ExportErrors";
 
 export default function TestsResultsScreen() {
   const router = useRouter();
-  const exportService = useRef(new ExportService()).current;
+  const exportService = useRef<ExportService | null>(null);
+
+  if (!exportService.current) {
+    const storage = new AsyncStorageAdapter();
+    const activeRepo = new ResultsRepository("activeTestResults", storage);
+    const passiveRepo = new ResultsRepository("passiveTestResults", storage);
+    const regularityRepo = new RegularityResultsRepository(
+      "regularityTestResults",
+      storage
+    );
+    const sessionRepo = new SessionRepository(storage);
+    const fileSharer =
+      Platform.OS === "web" ? new WebFileSharer() : new MobileFileSharer();
+
+    exportService.current = new ExportService(
+      activeRepo,
+      passiveRepo,
+      regularityRepo,
+      sessionRepo,
+      fileSharer
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -27,7 +64,22 @@ export default function TestsResultsScreen() {
       >
         <TouchableOpacity
           style={styles.exportAllButton}
-          onPress={() => exportService.exportAllResults()}
+          onPress={async () => {
+            if (!exportService.current) return;
+
+            const result = await exportService.current.exportAllResults();
+            if (result.success) {
+              Alert.alert("Success", "Results exported successfully!");
+            } else {
+              if (result.error instanceof NoResultsError) {
+                Alert.alert("No Results", result.error.message);
+              } else if (result.error instanceof SharingUnavailableError) {
+                Alert.alert("Export Complete", result.error.message);
+              } else {
+                Alert.alert("Error", result.error.message);
+              }
+            }
+          }}
         >
           <FontAwesome
             name="file-excel-o"

@@ -6,10 +6,14 @@ import {
 } from "@/src/domain/repositories/ResultsRepository";
 import { createResultsContext } from "./createResultsContext";
 import { ExportConfigBase } from "@/src/domain/repositories/BaseResultsRepository";
+import { AsyncStorageAdapter } from "@/src/infrastructure/storage/AsyncStorageAdapter";
 
 const resultsContextHelper = createResultsContext<ExposureBasedResult>(
   "Results",
-  (storageKey) => new ResultsRepository(storageKey)
+  (storageKey) => {
+    const storage = new AsyncStorageAdapter();
+    return new ResultsRepository(storageKey, storage);
+  }
 );
 
 export const ResultsProvider = resultsContextHelper.Provider;

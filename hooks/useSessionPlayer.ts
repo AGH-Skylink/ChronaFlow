@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Session } from "@/src/domain/session/Session";
 import { SessionPlayerService } from "@/src/application/services/SessionPlayerService";
 import { SessionRepository } from "@/src/domain/repositories/SessionRepository";
+import { AsyncStorageAdapter } from "@/src/infrastructure/storage/AsyncStorageAdapter";
 import { SessionBlock } from "@/types/session";
 
 type SessionStatus = "loading" | "overview" | "playing" | "completed" | "error";
@@ -16,7 +17,10 @@ export function useSessionPlayer({ sessionId }: UseSessionPlayerProps) {
   const [status, setStatus] = useState<SessionStatus>("loading");
   const [error, setError] = useState<string | null>(null);
 
-  const service = useMemo(() => new SessionPlayerService(new SessionRepository()), []);
+  const service = useMemo(() => {
+    const storage = new AsyncStorageAdapter();
+    return new SessionPlayerService(new SessionRepository(storage));
+  }, []);
 
   useEffect(() => {
     loadSession();

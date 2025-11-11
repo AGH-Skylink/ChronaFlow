@@ -3,6 +3,7 @@ import { usePassiveTestOperations } from "@/context/PassiveTestContext";
 import { useExposureTimer } from "./useExposureTimer";
 import { useResultPersistence } from "./useResultPersistence";
 import { ResultsRepository } from "@/src/domain/repositories/ResultsRepository";
+import { AsyncStorageAdapter } from "@/src/infrastructure/storage/AsyncStorageAdapter";
 
 const STORAGE_KEY = "passiveTestResults";
 
@@ -15,7 +16,10 @@ export function usePassiveTestHandlers({
 }: UsePassiveTestHandlersProps = {}) {
   const operations = usePassiveTestOperations();
   const [isCountdownActive, setIsCountdownActive] = useState(false);
-  const repository = useMemo(() => new ResultsRepository(STORAGE_KEY), []);
+  const repository = useMemo(() => {
+    const storage = new AsyncStorageAdapter();
+    return new ResultsRepository(STORAGE_KEY, storage);
+  }, []);
   const { saveResult } = useResultPersistence(repository);
 
   const { startTimer: startExposureTimer } = useExposureTimer({

@@ -3,6 +3,7 @@ import { useRegularityTestOperations } from "@/context/RegularityTestContext";
 import { useResultPersistence } from "./useResultPersistence";
 import { RegularityResult } from "@models/RegularityResult";
 import { RegularityResultsRepository } from "@/src/domain/repositories/RegularityResultsRepository";
+import { AsyncStorageAdapter } from "@/src/infrastructure/storage/AsyncStorageAdapter";
 
 const STORAGE_KEY = "regularityTestResults";
 
@@ -15,7 +16,10 @@ export function useRegularityTestHandlers({
 }: UseRegularityTestHandlersProps = {}) {
   const operations = useRegularityTestOperations();
   const [isCountdownActive, setIsCountdownActive] = useState(false);
-  const repository = useMemo(() => new RegularityResultsRepository(STORAGE_KEY), []);
+  const repository = useMemo(() => {
+    const storage = new AsyncStorageAdapter();
+    return new RegularityResultsRepository(STORAGE_KEY, storage);
+  }, []);
   const { saveResult } = useResultPersistence(repository);
 
   const handleStart = useCallback(() => {

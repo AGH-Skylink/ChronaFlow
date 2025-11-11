@@ -5,6 +5,7 @@ import { SessionRepository } from "@/src/domain/repositories/SessionRepository";
 import { SessionResultCleanupService } from "@/src/domain/services/SessionResultCleanupService";
 import { ResultsRepository } from "@/src/domain/repositories/ResultsRepository";
 import { RegularityResultsRepository } from "@/src/domain/repositories/RegularityResultsRepository";
+import { AsyncStorageAdapter } from "@/src/infrastructure/storage/AsyncStorageAdapter";
 
 export function useSessionManagement() {
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -12,10 +13,11 @@ export function useSessionManagement() {
   const [error, setError] = useState<Error | null>(null);
 
   const sessionManagementService = useMemo(() => {
-    const sessionRepo = new SessionRepository();
-    const activeRepo = new ResultsRepository("activeTestResults");
-    const passiveRepo = new ResultsRepository("passiveTestResults");
-    const regularityRepo = new RegularityResultsRepository("regularityTestResults");
+    const storage = new AsyncStorageAdapter();
+    const sessionRepo = new SessionRepository(storage);
+    const activeRepo = new ResultsRepository("activeTestResults", storage);
+    const passiveRepo = new ResultsRepository("passiveTestResults", storage);
+    const regularityRepo = new RegularityResultsRepository("regularityTestResults", storage);
     const cleanupService = new SessionResultCleanupService(activeRepo, passiveRepo, regularityRepo);
     
     return new SessionManagementService(sessionRepo, cleanupService);

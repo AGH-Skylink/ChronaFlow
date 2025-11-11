@@ -1,4 +1,3 @@
-import { Alert, Platform } from "react-native";
 import * as XLSX from "xlsx";
 import { ResultsRepository } from "@/src/domain/repositories/ResultsRepository";
 import { RegularityResultsRepository } from "@/src/domain/repositories/RegularityResultsRepository";
@@ -7,10 +6,10 @@ import { ActiveResultExporter } from "./export/ActiveResultExporter";
 import { PassiveResultExporter } from "./export/PassiveResultExporter";
 import { RegularityResultExporter } from "./export/RegularityResultExporter";
 import { SessionExporter } from "./export/SessionExporter";
-import { IFileSharer } from "./export/IFileSharer";
-import { WebFileSharer } from "./export/WebFileSharer";
-import { MobileFileSharer } from "./export/MobileFileSharer";
+import { IFileSharer } from "@/src/application/ports/IFileSharer";
 import { IResultExporter } from "./export/IResultExporter";
+import { Result, success, failure } from "@/src/domain/types/Result";
+import { NoResultsError, ExportFailedError } from "@/src/application/errors/ExportErrors";
 
 export class ExportService {
   private readonly activeRepo: ResultsRepository;
@@ -20,33 +19,38 @@ export class ExportService {
   private readonly fileSharer: IFileSharer;
 
   constructor(
-    activeRepo?: ResultsRepository,
-    passiveRepo?: ResultsRepository,
-    regularityRepo?: RegularityResultsRepository,
-    sessionRepo?: SessionRepository
+    activeRepo: ResultsRepository,
+    passiveRepo: ResultsRepository,
+    regularityRepo: RegularityResultsRepository,
+    sessionRepo: SessionRepository,
+    fileSharer: IFileSharer
   ) {
-    this.activeRepo = activeRepo || new ResultsRepository("activeTestResults");
-    this.passiveRepo = passiveRepo || new ResultsRepository("passiveTestResults");
-    this.regularityRepo = regularityRepo || new RegularityResultsRepository("regularityTestResults");
-    this.sessionRepo = sessionRepo || new SessionRepository();
-    
-    this.fileSharer = Platform.OS === "web" ? new WebFileSharer() : new MobileFileSharer();
+    this.activeRepo = activeRepo;
+    this.passiveRepo = passiveRepo;
+    this.regularityRepo = regularityRepo;
+    this.sessionRepo = sessionRepo;
+    this.fileSharer = fileSharer;
   }
 
-  async exportAllResults(): Promise<void> {
+  async exportAllResults(): Promise<Result<void, NoResultsError | ExportFailedError>> {
     try {
       const workbook = await this.createWorkbook();
       
       if (!this.hasAnySheets(workbook)) {
-        Alert.alert("No Results", "There are no test results to export.");
-        return;
+        return failure(new NoResultsError());
       }
 
       const fileName = this.generateFileName();
-      await this.fileSharer.shareWorkbook(workbook, fileName);
+      const shareResult = await this.fileSharer.shareWorkbook(workbook, fileName);
+      
+      if (!shareResult.success) {
+        return failure(new ExportFailedError(shareResult.error));
+      }
+
+      return success(undefined);
     } catch (error) {
       console.error("Error exporting all results:", error);
-      Alert.alert("Error", `Failed to export results. Please try again. ${error}`);
+      return failure(new ExportFailedError(error));
     }
   }
 

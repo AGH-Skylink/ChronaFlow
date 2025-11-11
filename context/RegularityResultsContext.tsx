@@ -6,10 +6,14 @@ import {
 } from "@/src/domain/repositories/RegularityResultsRepository";
 import { createResultsContext } from "./createResultsContext";
 import { ExportConfigBase } from "@/src/domain/repositories/BaseResultsRepository";
+import { AsyncStorageAdapter } from "@/src/infrastructure/storage/AsyncStorageAdapter";
 
 const regularityResultsContextHelper = createResultsContext<RegularityResult>(
   "RegularityResults",
-  (storageKey) => new RegularityResultsRepository(storageKey)
+  (storageKey) => {
+    const storage = new AsyncStorageAdapter();
+    return new RegularityResultsRepository(storageKey, storage);
+  }
 );
 
 export const RegularityResultsProvider =

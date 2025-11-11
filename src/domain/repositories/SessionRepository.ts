@@ -1,10 +1,12 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { IKeyValueStore } from "@/src/application/ports/IKeyValueStore";
 import { Session as SessionData } from "@/types/session";
 import { Session } from "../session/Session";
 
 const SESSIONS_STORAGE_KEY = "savedSessions";
 
 export class SessionRepository {
+  constructor(private storage: IKeyValueStore) {}
+
   async getById(id: string): Promise<Session | null> {
     try {
       const sessions = await this.getAll();
@@ -18,7 +20,7 @@ export class SessionRepository {
 
   async getAll(): Promise<SessionData[]> {
     try {
-      const sessions = await AsyncStorage.getItem(SESSIONS_STORAGE_KEY);
+      const sessions = await this.storage.getItem(SESSIONS_STORAGE_KEY);
       return sessions ? JSON.parse(sessions) : [];
     } catch (error) {
       console.error("Error getting sessions:", error);
@@ -37,7 +39,7 @@ export class SessionRepository {
         sessions.push(session);
       }
 
-      await AsyncStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
+      await this.storage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
     } catch (error) {
       console.error("Error saving session:", error);
     }
@@ -47,7 +49,7 @@ export class SessionRepository {
     try {
       const sessions = await this.getAll();
       const filtered = sessions.filter((s) => s.id !== id);
-      await AsyncStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(filtered));
+      await this.storage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(filtered));
     } catch (error) {
       console.error("Error deleting session:", error);
     }
