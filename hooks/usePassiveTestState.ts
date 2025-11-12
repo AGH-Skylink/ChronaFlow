@@ -2,52 +2,62 @@ import { useCallback, useState } from "react";
 import { PassiveTest } from "@stp-tests/PassiveTest";
 import { useExposureBasedTestState } from "./useExposureBasedTestState";
 
-
 export function usePassiveTestState(sessionId: string | null) {
-  const baseState = useExposureBasedTestState(
-    (sid) => new PassiveTest(sid),
-    sessionId
-  );
+  const {
+    test,
+    state,
+    targetExposure,
+    emoji,
+    startTest,
+    beginExposure,
+    completeExposure,
+    complete,
+    reset: baseReset,
+    syncState,
+  } = useExposureBasedTestState(PassiveTest, sessionId);
 
-  const [sliderValue, setSliderValueState] = useState(1000);
+  const [sliderValue, setSliderValueState] = useState(
+    (test as PassiveTest).sliderValue
+  );
 
   const setSliderValue = useCallback(
     (value: number) => {
-      (baseState.test as PassiveTest).setSliderValue(value);
+      (test as PassiveTest).setSliderValue(value);
       setSliderValueState(value);
     },
-    [baseState.test]
+    [test]
   );
 
   const calculateResults = useCallback(() => {
     try {
-      const test = baseState.test as PassiveTest;
-      const result = test.generateResults();
-      baseState.syncState();
+      const passiveTest = test as PassiveTest;
+      const result = passiveTest.generateResults();
+      syncState();
       return result;
     } catch (error) {
       console.error("Failed to calculate results", error);
       return null;
     }
-  }, [baseState]);
+  }, [test, syncState]);
 
   const reset = useCallback(() => {
-    baseState.reset();
-    setSliderValueState(1000);
-  }, [baseState]);
+    baseReset();
+    setSliderValueState((test as PassiveTest).sliderValue);
+  }, [baseReset, test]);
 
   return {
-    test: baseState.test as PassiveTest,
-    state: baseState.state,
-    targetExposure: baseState.targetExposure,
-    emoji: baseState.emoji,
+    test: test as PassiveTest,
+    state,
+    targetExposure,
+    emoji,
     sliderValue,
-    startTest: baseState.startTest,
-    beginExposure: baseState.beginExposure,
-    completeExposure: baseState.completeExposure,
-    complete: baseState.complete,
+    startTest,
+    beginExposure,
+    completeExposure,
+    complete,
     setSliderValue,
     calculateResults,
     reset,
+    syncState,
   };
 }

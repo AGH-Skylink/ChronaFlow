@@ -1,95 +1,61 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { ActiveTest } from "@stp-tests/ActiveTest";
-import { ExposureBasedPhase } from "@/src/domain/stp-tests/ExposureBasedTest";
+import { useExposureBasedTestState } from "./useExposureBasedTestState";
 
 export function useActiveTestState(sessionId: string | null) {
-  const testRef = useRef(new ActiveTest(sessionId));
-  const [state, setState] = useState(testRef.current.state);
-  const [targetExposure, setTargetExposure] = useState<number>(0);
-  const [emoji, setEmoji] = useState(testRef.current.emoji);
+  const {
+    test,
+    state,
+    targetExposure,
+    emoji,
+    startTest: baseStartTest,
+    beginExposure,
+    completeExposure,
+    complete,
+    reset: baseReset,
+    syncState,
+  } = useExposureBasedTestState(ActiveTest, sessionId);
+
   const [holdDuration, setHoldDuration] = useState<number | null>(null);
 
-  const syncState = useCallback(() => {
-    const test = testRef.current;
-    setState(test.state);
-    setTargetExposure(test.targetExposure);
-    setEmoji(test.emoji);
-  }, []);
-
-  const reset = useCallback(() => {
-    const test = testRef.current;
-    test.reset();
-    syncState();
-    setHoldDuration(null);
-  }, [syncState]);
-
-  useEffect(() => {
-    testRef.current = new ActiveTest(sessionId);
-    reset();
-  }, [sessionId, reset]);
-
   const startTest = useCallback(() => {
-    const test = testRef.current;
-    try {
-      test.startTest();
-      syncState();
+    const started = baseStartTest();
+    if (started) {
       setHoldDuration(null);
-      return true;
-    } catch (error) {
-      console.error("Failed to start active test", error);
-      return false;
     }
-  }, [syncState]);
-
-  const beginExposure = useCallback(() => {
-    const test = testRef.current;
-    try {
-      test.beginExposure();
-      setState(test.state);
-      return true;
-    } catch (error) {
-      console.error("Failed to begin exposure", error);
-      return false;
-    }
-  }, []);
-
-  const completeExposure = useCallback(() => {
-    const test = testRef.current;
-    try {
-      test.completeExposure();
-      setState(test.state);
-      return true;
-    } catch (error) {
-      console.error("Failed to complete exposure", error);
-      return false;
-    }
-  }, []);
+    return started;
+  }, [baseStartTest]);
 
   const startTimer = useCallback(() => {
     try {
-      testRef.current.startTimer();
+      (test as ActiveTest).startTimer();
       return true;
     } catch (error) {
       console.warn("Trying to start timer outside reproduction phase", error);
       return false;
     }
-  }, []);
+  }, [test]);
 
   const endTimer = useCallback(() => {
     try {
-      const test = testRef.current;
-      const result = test.endTimer();
-      setHoldDuration(test.userExposure);
-      setState(test.state);
+      const activeTest = test as ActiveTest;
+      const result = activeTest.endTimer();
+      setHoldDuration(activeTest.userExposure);
+      syncState();
       return result;
     } catch (error) {
       console.error("Failed to finish active test", error);
       return null;
     }
-  }, []);
+  }, [test, syncState]);
+
+  const reset = useCallback(() => {
+    baseReset();
+    setHoldDuration(null);
+  }, [baseReset]);
 
   return {
-    test: testRef.current,
+    test: test as ActiveTest,
     state,
     targetExposure,
     emoji,
@@ -100,5 +66,7 @@ export function useActiveTestState(sessionId: string | null) {
     startTimer,
     endTimer,
     reset,
+    complete,
+    syncState,
   };
 }

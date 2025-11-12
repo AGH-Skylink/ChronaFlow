@@ -9,11 +9,15 @@ import { ExposureBasedTest } from "@stp-tests/ExposureBasedTest";
  * @param sessionId - Session ID for the test
  * @returns Base test state and operations
  */
+type ExposureBasedTestConstructor<T extends ExposureBasedTest> = new (
+  sessionId: string | null
+) => T;
+
 export function useExposureBasedTestState<T extends ExposureBasedTest>(
-  testFactory: (sessionId: string | null) => T,
+  TestConstructor: ExposureBasedTestConstructor<T>,
   sessionId: string | null
 ) {
-  const testRef = useRef(testFactory(sessionId));
+  const testRef = useRef(new TestConstructor(sessionId));
   const [state, setState] = useState(testRef.current.state);
   const [targetExposure, setTargetExposure] = useState<number>(0);
   const [emoji, setEmoji] = useState(testRef.current.emoji);
@@ -75,9 +79,9 @@ export function useExposureBasedTestState<T extends ExposureBasedTest>(
   }, []);
 
   useEffect(() => {
-    testRef.current = testFactory(sessionId);
+    testRef.current = new TestConstructor(sessionId);
     reset();
-  }, [sessionId, reset, testFactory]);
+  }, [sessionId, reset, TestConstructor]);
 
   return {
     test: testRef.current,
