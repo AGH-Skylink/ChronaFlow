@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { ExposureBasedPhase } from "@features/ExposureBasedTest";
+import { ExposureBasedPhase } from "@/src/domain/stp-tests/ExposureBasedTest";
 import { usePassiveTestState } from "@/hooks/usePassiveTestState";
 import { ExposureBasedResult } from "@models/ExposureBasedResult";
 import { createTestContext, TestContextValue } from "./TestContext";

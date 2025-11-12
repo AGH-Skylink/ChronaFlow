@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { TestStyles } from "@/constants/TestStyles";
-import { ExposureBasedPhase } from "@features/ExposureBasedTest";
+import { ExposureBasedPhase } from "@/src/domain/stp-tests/ExposureBasedTest";
 import {
   PassiveTestProvider,
   usePassiveTestStateContext,

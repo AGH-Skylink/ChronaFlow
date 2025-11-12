@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { TestStyles } from "@/constants/TestStyles";
-import { ExposureBasedPhase } from "@features/ExposureBasedTest";
+import { ExposureBasedPhase } from "@/src/domain/stp-tests/ExposureBasedTest";
 
 interface ExposureBasedTestHeaderProps {
   testName: string;

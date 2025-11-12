@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { PassiveTest } from "@features/PassiveTest";
+import { PassiveTest } from "@/src/domain/stp-tests/PassiveTest";
 import { useExposureBasedTestState } from "./useExposureBasedTestState";
 import { ExposureBasedResult } from "@models/ExposureBasedResult";
 

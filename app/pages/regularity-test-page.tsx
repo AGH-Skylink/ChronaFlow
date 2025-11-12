@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { TestStyles } from "@/constants/TestStyles";
-import { RegularityPhase } from "@features/RegularityTest";
+import { RegularityPhase } from "@/src/domain/stp-tests/RegularityTest";
 import {
   RegularityTestProvider,
   useRegularityTestStateContext,

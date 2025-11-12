@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ExposureBasedTest } from "@features/ExposureBasedTest";
+import { ExposureBasedTest } from "@/src/domain/stp-tests/ExposureBasedTest";
 
 /**
  * Generic hook for managing any ExposureBasedTest instance

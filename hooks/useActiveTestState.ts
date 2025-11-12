@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActiveTest } from "@features/ActiveTest";
-import { ExposureBasedPhase } from "@features/ExposureBasedTest";
+import { ActiveTest } from "@/src/domain/stp-tests/ActiveTest";
+import { ExposureBasedPhase } from "@/src/domain/stp-tests/ExposureBasedTest";
 
 export function useActiveTestState(sessionId: string | null) {
   const testRef = useRef(new ActiveTest(sessionId));

@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { TestStyles } from "@/constants/TestStyles";
-import { RegularityPhase } from "@features/RegularityTest";
+import { RegularityPhase } from "@/src/domain/stp-tests/RegularityTest";
 import { useRegularityTestStateContext } from "@/context/RegularityTestContext";
 import { RegularityTestTappingArea } from "./RegularityTestTappingArea";
 import { ResultsCard } from "@/components/ResultsCard";

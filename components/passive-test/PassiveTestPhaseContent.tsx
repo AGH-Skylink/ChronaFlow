@@ -1,7 +1,7 @@
 import React from "react";
 import { View } from "react-native";
 import { TestStyles } from "@/constants/TestStyles";
-import { ExposureBasedPhase } from "@features/ExposureBasedTest";
+import { ExposureBasedPhase } from "@/src/domain/stp-tests/ExposureBasedTest";
 import { usePassiveTestStateContext } from "@/context/PassiveTestContext";
 import { ExposureBasedTestExposure } from "@/components/exposure-based-test/ExposureBasedTestExposure";
 import { PassiveTestInput } from "./PassiveTestInput";

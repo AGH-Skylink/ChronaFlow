@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { ExposureBasedPhase } from "@features/ExposureBasedTest";
+import { ExposureBasedPhase } from "@/src/domain/stp-tests/ExposureBasedTest";
 import { useActiveTestOperations } from "@/context/ActiveTestContext";
 import { useExposureTimer } from "./useExposureTimer";
 import { useResultPersistence } from "./useResultPersistence";

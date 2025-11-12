@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { RegularityTest, RegularityPhase } from "@features/RegularityTest";
+import { RegularityTest, RegularityPhase } from "@/src/domain/stp-tests/RegularityTest";
 import { RegularityResult } from "@models/RegularityResult";
 
 export function useRegularityTestState(sessionId: string | null) {

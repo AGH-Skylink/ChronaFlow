@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { RegularityPhase } from "@features/RegularityTest";
+import { RegularityPhase } from "@/src/domain/stp-tests/RegularityTest";
 import { useRegularityTestState } from "@/hooks/useRegularityTestState";
 import { RegularityResult } from "@models/RegularityResult";
 import { createTestContext, TestContextValue } from "./TestContext";
