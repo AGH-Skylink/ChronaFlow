@@ -1,198 +1,276 @@
 import { StyleSheet } from "react-native";
-import { COLORS, typography, layout, buttons, testArea } from "./Styles";
+import { COLORS, typography, layout, buttons, testArea, SPACING, RADIUS, ELEVATION } from "./Styles";
+import { TEST_COLORS } from "./Colors";
 
 /**
- * Common styles for all cognitive test screens
+ * Enhanced styles for all cognitive test screens
+ * Modern, consistent, and visually appealing
  */
 export const TestStyles = StyleSheet.create({
   // Container styles
   container: {
     flex: 1,
     backgroundColor: COLORS.background.primary,
-    padding: 30,
-    paddingTop: 50,
+    padding: SPACING.xl,
+    paddingTop: SPACING.xxxl,
+  },
+  regularityContainer: {
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.lg,
   },
 
   // Text styles
-    title: {
-    ...typography.title,
-    fontSize: 30,
-    fontWeight: "bold",
-    color: COLORS.text.primary,
-    marginBottom: 16,
+  title: {
+    ...typography.h2,
     textAlign: "center",
-    },
+    marginBottom: SPACING.md,
+  },
 
   // Header styles
   headerContainer: {
-    marginBottom: 20,
+    marginBottom: SPACING.lg,
+    alignItems: 'center',
   },
   header: {
-    ...typography.header,
+    ...typography.h1,
     textAlign: "center",
+    marginBottom: SPACING.sm,
   },
   instructions: {
-    ...typography.subtitle,
+    ...typography.bodyLarge,
     textAlign: "center",
-    marginBottom: 5,
+    marginBottom: SPACING.md,
+    paddingHorizontal: SPACING.md,
+    lineHeight: 28,
   },
 
+  // Enhanced test area
   testArea: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 16,
-    marginBottom: 20,
+    borderRadius: RADIUS.xl,
+    marginBottom: SPACING.lg,
+    borderWidth: 2,
+  },
+  testAreaFull: {
+    width: "100%",
+    alignSelf: "stretch",
+    padding: SPACING.sm,
+    marginBottom: 0,
+    borderWidth: 0,
   },
   activeArea: {
     backgroundColor: COLORS.background.secondary,
+    borderColor: COLORS.primary,
+    ...ELEVATION.large,
   },
   inactiveArea: {
-    backgroundColor: "#242424",
+    backgroundColor: COLORS.background.secondary,
+    borderColor: COLORS.borderSubtle,
+    opacity: 0.7,
   },
 
   // Start button container
   testContainer: {
-    backgroundColor: "#242424",
+    backgroundColor: COLORS.background.tertiary,
     alignItems: "center",
     justifyContent: "center",
-    padding: 20,
+    padding: SPACING.xl,
     height: "90%",
-    borderRadius: 16,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...ELEVATION.medium,
+  },
+  regularityTapTouchable: {
+    flex: 1,
+    width: "100%",
+    alignSelf: "stretch",
+  },
+  regularityTapContainer: {
+    flex: 1,
+    width: "100%",
+    padding: SPACING.md,
+    margin: 0,
+    height: "100%",
   },
   testText: {
+    ...typography.h3,
     textAlign: "center",
-    fontSize: 26,
-    fontWeight: "600",
-    marginBottom: 16,
-    color: COLORS.text.primary,
+    marginBottom: SPACING.md,
   },
 
-  // Input styles
+  // Enhanced input styles
   inputContainer: {
     width: "90%",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 30,
-    overflowY: "scroll",
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.xl,
   },
   inputLabel: {
-    fontSize: 22,
-    fontWeight: "600",
-    color: COLORS.text.primary,
-    marginBottom: 20,
+    ...typography.h4,
+    marginBottom: SPACING.lg,
     textAlign: "center",
   },
   inputField: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: COLORS.text.primary,
+    ...typography.h3,
     textAlign: "center",
-    backgroundColor: "#303030",
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: COLORS.background.elevated,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.lg,
     width: 150,
+    borderWidth: 2,
+    borderColor: COLORS.borderSubtle,
   },
   inputFieldFocused: {
-    backgroundColor: "#3b3b3b",
+    backgroundColor: COLORS.background.elevated,
     borderWidth: 2,
     borderColor: COLORS.primary,
+    ...ELEVATION.colored,
   },
 
-  // Results section
+  // Enhanced results section
   resultsContainer: {
     width: "100%",
     height: "90%",
-    padding: 20,
+    padding: SPACING.lg,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: COLORS.background.secondary,
-    borderRadius: 16,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...ELEVATION.medium,
   },
   resultsTitle: {
-    ...typography.title,
+    ...typography.h2,
     textAlign: "center",
-    fontSize: 26,
-    color: COLORS.text.primary,
+    marginBottom: SPACING.md,
   },
   resultsCard: {
     width: "100%",
     backgroundColor: COLORS.background.tertiary,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 16,
-    marginBottom: 24,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.lg,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...ELEVATION.small,
   },
   
   // Common elements
   divider: {
     height: 1,
     width: "100%",
-    backgroundColor: "#3d4852",
+    backgroundColor: COLORS.borderSubtle,
+    marginVertical: SPACING.sm,
   },
   emoji: {
-    fontSize: 48,
-    color: COLORS.text.primary,
-    fontWeight: "bold",
+    fontSize: 56,
     textAlign: "center",
+    marginBottom: SPACING.md,
   },
-  // Buttons
+  // Enhanced buttons
   primaryButton: {
-    backgroundColor: COLORS.background.primary,
-    borderWidth: 2,
-    borderColor: "#3d4852",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    margin: 10,
-    borderRadius: 12,
+    ...buttons.primary,
     width: "80%",
-    alignItems: "center",
+    paddingVertical: SPACING.md,
+  },
+  secondaryButton: {
+    ...buttons.secondary,
+    width: "80%",
+    paddingVertical: SPACING.md,
+  },
+  outlineButton: {
+    ...buttons.primaryOutline,
+    width: "80%",
+    paddingVertical: SPACING.md,
   },
   disabledButton: {
-    opacity: 0.5,
-    backgroundColor: "#666",
+    ...buttons.disabled,
+    width: "80%",
   },
   primaryButtonText: {
-    color: "white",
-    fontSize: 16,
+    ...buttons.buttonText,
+    fontSize: 17,
     fontWeight: "700",
   },
   resetButton: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 14,
-    paddingHorizontal: 36,
-    borderRadius: 8,
+    ...buttons.large,
   },
   resetButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
+    ...buttons.buttonTextLarge,
   },
 
+  // Enhanced progress bar
   progressContainer: {
-    height: 8,
-    width: 200,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    borderRadius: 4,
+    height: 12,
+    width: 240,
+    backgroundColor: COLORS.background.elevated,
+    borderRadius: RADIUS.full,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: COLORS.borderSubtle,
   },
   progressBar: {
     height: "100%",
     backgroundColor: COLORS.primary,
+    borderRadius: RADIUS.full,
+  },
+  progressBarRegularity: {
+    height: "100%",
+    backgroundColor: TEST_COLORS.regularity.primary,
+    borderRadius: RADIUS.full,
+  },
+  progressBarPassive: {
+    height: "100%",
+    backgroundColor: TEST_COLORS.passive.primary,
+    borderRadius: RADIUS.full,
+  },
+  progressBarActive: {
+    height: "100%",
+    backgroundColor: TEST_COLORS.active.primary,
+    borderRadius: RADIUS.full,
   },
 
   startContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: SPACING.lg,
   },
 
+  // Enhanced slider value
   sliderValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#007AFF',
+    ...typography.h2,
+    color: COLORS.primary,
     textAlign: 'center',
-    marginTop: 10,
+    marginTop: SPACING.md,
+    fontWeight: '700',
+  },
+  
+  // Countdown styles
+  countdownText: {
+    ...typography.display,
+    color: COLORS.primary,
+    fontWeight: '800',
+  },
+  
+  // Phase indicator
+  phaseIndicator: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    backgroundColor: COLORS.background.elevated,
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginBottom: SPACING.md,
+  },
+  phaseText: {
+    ...typography.labelSmall,
+    color: COLORS.text.secondary,
   },
 });

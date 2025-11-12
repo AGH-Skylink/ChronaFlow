@@ -19,8 +19,14 @@ export function RegularityTestTappingArea({
       onPress={isActive ? onTap : undefined}
       activeOpacity={isActive ? 0.8 : 1}
       disabled={!isActive}
+      style={TestStyles.regularityTapTouchable}
     >
-      <View style={TestStyles.testContainer}>
+      <View
+        style={[
+          TestStyles.testContainer,
+          TestStyles.regularityTapContainer,
+        ]}
+      >
         <Text style={TestStyles.testText}>
           {tapCount} / {TAP_COUNT}
         </Text>

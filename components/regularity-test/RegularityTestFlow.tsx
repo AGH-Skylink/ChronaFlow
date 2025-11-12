@@ -40,7 +40,7 @@ export function RegularityTestFlow({
           <Text style={TestStyles.instructions}>
             {isComplete
               ? "Test completed"
-              : "Tap the screen at 1-second intervals."}
+              : "Tap the box below at 1-second intervals."}
           </Text>
         )}
       </View>

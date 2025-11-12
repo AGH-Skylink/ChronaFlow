@@ -40,3 +40,7 @@ yarn-error.*
 android
 ios
 local.properties
+deploy.sh
+
+# Local Netlify folder
+.netlify

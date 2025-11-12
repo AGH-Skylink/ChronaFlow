@@ -31,7 +31,7 @@ export function RegularityTestPhaseContent({
   } = useRegularityTestStateContext();
 
   return (
-    <View style={TestStyles.testArea}>
+    <View style={[TestStyles.testArea, TestStyles.testAreaFull]}>
       {!isComplete && (
         <RegularityTestTappingArea
           tapCount={tapCount}

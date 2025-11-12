@@ -8,7 +8,7 @@ export enum RegularityPhase {
   COMPLETED = 4,
 }
 
-export const TAP_COUNT = 3;
+export const TAP_COUNT = 25;
 
 export class RegularityTest {
   private _state: RegularityPhase = RegularityPhase.INACTIVE;

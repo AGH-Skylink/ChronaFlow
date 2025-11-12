@@ -100,10 +100,7 @@ export function createResultsContext<T extends IResult>(
 
     const exportResults = async () => {
       try {
-        console.log("exportResults called in context");
-        console.log("Export config:", exportConfig);
         await repository.exportToCsv(exportConfig);
-        console.log("Repository exportToCsv completed");
       } catch (error) {
         console.error("Error exporting results:", error);
         throw error;

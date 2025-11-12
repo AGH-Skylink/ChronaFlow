@@ -45,7 +45,9 @@ function RegularityTestContent({ onComplete }: { onComplete?: () => void }) {
       style={{ flex: 1 }}
     >
       <TouchableWithoutFeedback onPress={dismissKeyboard}>
-        <View style={TestStyles.container}>
+        <View
+          style={[TestStyles.container, TestStyles.regularityContainer]}
+        >
           {!testStarted ? (
             <TestStart
               onStart={handleStart}

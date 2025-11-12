@@ -1,17 +1,17 @@
 import React, { useRef } from "react";
 import {
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   Platform,
   Alert,
+  View as RNView,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Text, View } from "@/components/Themed";
 import { StatusBar } from "expo-status-bar";
 import { TestCard } from "@/components/TestCard";
 import { ExportService } from "@/src/application/services/ExportService";
-import { FontAwesome } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { AsyncStorageAdapter } from "@/src/infrastructure/storage/AsyncStorageAdapter";
 import { ResultsRepository } from "@/src/domain/repositories/ResultsRepository";
 import { RegularityResultsRepository } from "@/src/domain/repositories/RegularityResultsRepository";
@@ -22,9 +22,13 @@ import {
   NoResultsError,
   SharingUnavailableError,
 } from "@/src/application/errors/ExportErrors";
+import { SPACING, RADIUS, buttons } from "@/constants/Styles";
+import { ResponsiveScaffold } from "@/components/layout/ResponsiveScaffold";
+import { useResponsive } from "@/hooks/useResponsive";
 
 export default function TestsResultsScreen() {
   const router = useRouter();
+  const { isTablet, isDesktop } = useResponsive();
   const exportService = useRef<ExportService | null>(null);
 
   if (!exportService.current) {
@@ -49,21 +53,31 @@ export default function TestsResultsScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <ResponsiveScaffold
+      scrollable
+      contentStyle={[
+        styles.contentContainer,
+        (isTablet || isDesktop) && styles.contentWide,
+      ]}
+    >
+      <View
+        style={[styles.header, (isTablet || isDesktop) && styles.headerWide]}
+      >
         <Text style={styles.headerTitle}>Tests Results</Text>
         <Text style={styles.headerSubtitle}>
           View your performance history for each test
         </Text>
       </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
+      <View
+        style={[
+          styles.actionsRow,
+          (isTablet || isDesktop) && styles.actionsRowWide,
+        ]}
       >
         <TouchableOpacity
-          style={styles.exportAllButton}
+          style={[buttons.primary, styles.exportButton]}
+          activeOpacity={0.9}
           onPress={async () => {
             if (!exportService.current) return;
 
@@ -81,47 +95,69 @@ export default function TestsResultsScreen() {
             }
           }}
         >
-          <FontAwesome
-            name="file-excel-o"
-            size={18}
-            color="white"
-            style={styles.exportIcon}
-          />
-          <Text style={styles.exportAllButtonText}>EXPORT ALL (EXCEL)</Text>
+          <RNView style={styles.exportButtonContent}>
+            <Ionicons name="cloud-download-outline" size={16} color="#fff" />
+            <Text style={[buttons.buttonText, styles.exportButtonText]}>
+              Export All
+            </Text>
+          </RNView>
         </TouchableOpacity>
+      </View>
 
+      <RNView
+        style={[
+          styles.cardsGrid,
+          (isTablet || isDesktop) && styles.cardsGridWide,
+        ]}
+      >
         <TestCard
           title="Regularity Test Results"
           description="View your history of rhythm maintenance tests"
           icon="hand-o-up"
           onPress={() => router.push("/pages/regularity-results")}
+          style={[
+            styles.cardWrapper,
+            isTablet && styles.cardWrapperTablet,
+            isDesktop && styles.cardWrapperDesktop,
+          ]}
         />
         <TestCard
           title="Passive Test Results"
           description="View your history of passive exposure tests"
           icon="play-circle"
           onPress={() => router.push("/pages/passive-results")}
+          style={[
+            styles.cardWrapper,
+            isTablet && styles.cardWrapperTablet,
+            isDesktop && styles.cardWrapperDesktop,
+          ]}
         />
         <TestCard
-          title="Active Exposure Test Results"
+          title="Active Test Results"
           description="View your history of reaction time tests"
           icon="eye"
           onPress={() => router.push("/pages/active-results")}
+          style={[
+            styles.cardWrapper,
+            isTablet && styles.cardWrapperTablet,
+            isDesktop && styles.cardWrapperDesktop,
+          ]}
         />
-      </ScrollView>
+      </RNView>
       <StatusBar style="light" />
-    </View>
+    </ResponsiveScaffold>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 60,
+    paddingTop: 24,
     paddingBottom: 20,
+  },
+  headerWide: {
+    paddingHorizontal: 0,
+    paddingTop: SPACING.xxxl,
   },
   headerTitle: {
     fontSize: 28,
@@ -133,39 +169,50 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#a0aec0",
   },
-  scrollView: {
-    flex: 1,
-  },
   contentContainer: {
-    padding: 20,
-    paddingBottom: 40,
+    paddingVertical: SPACING.xxxl,
+    paddingHorizontal: SPACING.lg,
+    gap: SPACING.xl,
   },
-  exportAllButton: {
-    backgroundColor: "#3b82f6",
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 20,
+  contentWide: {
+    paddingHorizontal: 0,
+  },
+  exportButton: {
+    flex: 1,
+    borderRadius: RADIUS.lg,
+    marginRight: SPACING.sm,
+    marginBottom: SPACING.lg,
+  },
+  actionsRow: {
+    width: "100%",
+  },
+  actionsRowWide: {
+    alignItems: "flex-end",
+  },
+  exportButtonContent: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "center",
   },
-  exportIcon: {
-    marginRight: 10,
+  exportButtonText: {
+    marginLeft: SPACING.xs,
   },
-  exportAllButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
+  cardsGrid: {
+    gap: SPACING.md,
   },
-  comingSoonContainer: {
-    marginTop: 24,
-    alignItems: "center",
-    padding: 16,
+  cardsGridWide: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: SPACING.md,
   },
-  comingSoon: {
-    fontSize: 16,
-    fontStyle: "italic",
-    color: "#6b7280",
-    textAlign: "center",
+  cardWrapper: {
+    width: "100%",
+  },
+  cardWrapperTablet: {
+    width: "48%",
+  },
+  cardWrapperDesktop: {
+    width: "32%",
+    minWidth: 320,
   },
 });
