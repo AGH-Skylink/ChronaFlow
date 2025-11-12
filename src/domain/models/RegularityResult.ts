@@ -1,7 +1,9 @@
 import { IResults } from "./IResult";
 
-const generateId = () =>
-  `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+const generateId = () => {
+  const randomPart = Math.random().toString(36).slice(2).slice(0, 6).padEnd(6, "0");
+  return `${Date.now()}-${randomPart}`;
+};
 
 export class RegularityResult implements IResults {
   constructor(

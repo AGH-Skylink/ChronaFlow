@@ -124,21 +124,16 @@ export abstract class BaseResultsRepository<T extends IResult> {
 
   async exportToCsv(config: ExportConfigBase<T>): Promise<void> {
     try {
-      console.log("Starting CSV export...");
       const csvContent = await this.generateCsv(config);
-      console.log("CSV content generated, length:", csvContent.length);
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const fileName = `${config.fileNamePrefix}_${timestamp}.csv`;
       
       const file = new FileSystem.File(FileSystem.Paths.cache.uri, fileName);
-      console.log("Will save to:", file.uri);
 
       await file.write(csvContent);
-      console.log("File written successfully");
 
       const isSharingAvailable = await Sharing.isAvailableAsync();
-      console.log("Sharing available:", isSharingAvailable);
       
       if (isSharingAvailable) {
         await Sharing.shareAsync(file.uri, {
@@ -146,10 +141,8 @@ export abstract class BaseResultsRepository<T extends IResult> {
           dialogTitle: config.dialogTitle,
           UTI: "public.comma-separated-values-text",
         });
-        console.log("Sharing completed");
       } else {
         console.log("File saved to:", file.uri);
-        console.log("Sharing not available on this platform");
       }
     } catch (error) {
       console.error("Error exporting to CSV:", error);

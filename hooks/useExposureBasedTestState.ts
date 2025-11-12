@@ -18,6 +18,8 @@ export function useExposureBasedTestState<T extends ExposureBasedTest>(
   sessionId: string | null
 ) {
   const testRef = useRef(new TestConstructor(sessionId));
+  const prevSessionIdRef = useRef(sessionId);
+  const prevConstructorRef = useRef(TestConstructor);
   const [state, setState] = useState(testRef.current.state);
   const [targetExposure, setTargetExposure] = useState<number>(0);
   const [emoji, setEmoji] = useState(testRef.current.emoji);
@@ -79,9 +81,18 @@ export function useExposureBasedTestState<T extends ExposureBasedTest>(
   }, []);
 
   useEffect(() => {
+    const sessionChanged = prevSessionIdRef.current !== sessionId;
+    const constructorChanged = prevConstructorRef.current !== TestConstructor;
+
+    if (!sessionChanged && !constructorChanged) {
+      return;
+    }
+
+    prevSessionIdRef.current = sessionId;
+    prevConstructorRef.current = TestConstructor;
     testRef.current = new TestConstructor(sessionId);
     reset();
-  }, [sessionId, reset, TestConstructor]);
+  }, [sessionId, TestConstructor, reset]);
 
   return {
     test: testRef.current,
