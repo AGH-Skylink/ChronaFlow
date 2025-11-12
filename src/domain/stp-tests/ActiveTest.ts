@@ -30,8 +30,19 @@ export class ActiveTest extends ExposureBasedTest {
       throw new Error("Hold timer was not started.");
     }
     this._holdEnd = Date.now();
-    return this.generateResults();
+    this.calculateUserExposure();
+    const result = this.generateResults();
+    this._state = ExposureBasedPhase.RESULTS;
+    return result;
+  }
+
+  reset(): void {
+    super.reset();
+    this._holdStart = null;
+    this._holdEnd = null;
   }
 }
+
+
 
 

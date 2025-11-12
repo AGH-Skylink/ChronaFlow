@@ -18,6 +18,7 @@ interface RegularityTestOperations {
   beginTapping: () => boolean;
   recordTap: () => boolean;
   analyzeResults: () => RegularityResult | null;
+  complete: () => boolean;
   reset: () => void;
 }
 
@@ -54,6 +55,7 @@ export function RegularityTestProvider({
       beginTapping: testState.beginTapping,
       recordTap: testState.recordTap,
       analyzeResults: testState.analyzeResults,
+      complete: testState.complete,
       reset: testState.reset,
     },
   };

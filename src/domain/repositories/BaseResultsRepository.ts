@@ -131,7 +131,7 @@ export abstract class BaseResultsRepository<T extends IResult> {
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const fileName = `${config.fileNamePrefix}_${timestamp}.csv`;
       
-      const file = new FileSystem.File(FileSystem.Paths.document.uri, fileName);
+      const file = new FileSystem.File(FileSystem.Paths.cache.uri, fileName);
       console.log("Will save to:", file.uri);
 
       await file.write(csvContent);

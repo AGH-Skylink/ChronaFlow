@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
-import { PassiveTest } from "@/src/domain/stp-tests/PassiveTest";
+import { PassiveTest } from "@stp-tests/PassiveTest";
 import { useExposureBasedTestState } from "./useExposureBasedTestState";
-import { ExposureBasedResult } from "@models/ExposureBasedResult";
 
 
 export function usePassiveTestState(sessionId: string | null) {
@@ -23,7 +22,6 @@ export function usePassiveTestState(sessionId: string | null) {
   const calculateResults = useCallback(() => {
     try {
       const test = baseState.test as PassiveTest;
-      test.calculateUserExposure();
       const result = test.generateResults();
       baseState.syncState();
       return result;

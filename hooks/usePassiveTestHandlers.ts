@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { usePassiveTestOperations } from "@/context/PassiveTestContext";
+import { usePassiveTestOperations, usePassiveTestStateContext } from "@/context/PassiveTestContext";
 import { useExposureTimer } from "./useExposureTimer";
 import { useResultPersistence } from "./useResultPersistence";
 import { ResultsRepository } from "@/src/domain/repositories/ResultsRepository";
@@ -15,6 +15,7 @@ export function usePassiveTestHandlers({
   onComplete,
 }: UsePassiveTestHandlersProps = {}) {
   const operations = usePassiveTestOperations();
+  const stateContext = usePassiveTestStateContext();
   const [isCountdownActive, setIsCountdownActive] = useState(false);
   const repository = useMemo(() => {
     const storage = new AsyncStorageAdapter();
@@ -23,9 +24,9 @@ export function usePassiveTestHandlers({
   const { saveResult } = useResultPersistence(repository);
 
   const { startTimer: startExposureTimer } = useExposureTimer({
-    targetExposure: 0,
+    getTargetExposure: () => stateContext.targetExposure,
     onComplete: operations.completeExposure,
-    enabled: false,
+    enabled: true,
   });
 
   const handleStart = useCallback(() => {

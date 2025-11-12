@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { RegularityTest, RegularityPhase } from "@/src/domain/stp-tests/RegularityTest";
-import { RegularityResult } from "@models/RegularityResult";
+import { RegularityTest, RegularityPhase } from "@stp-tests/RegularityTest";
 
 export function useRegularityTestState(sessionId: string | null) {
   const testRef = useRef(new RegularityTest(sessionId));
@@ -48,9 +47,12 @@ export function useRegularityTestState(sessionId: string | null) {
 
   const recordTap = useCallback(() => {
     try {
+      const wasIncomplete = !testRef.current.isComplete;
       testRef.current.recordTap();
+      const isNowComplete = testRef.current.isComplete;
       syncState();
-      return true;
+      // Return true if the test just completed with this tap
+      return wasIncomplete && isNowComplete;
     } catch (error) {
       console.error("Failed to record tap", error);
       return false;
@@ -60,12 +62,22 @@ export function useRegularityTestState(sessionId: string | null) {
   const analyzeResults = useCallback(() => {
     try {
       const result = testRef.current.analyzeResults();
-      testRef.current.complete();
       syncState();
       return result;
     } catch (error) {
       console.error("Failed to analyze results", error);
       return null;
+    }
+  }, [syncState]);
+
+  const complete = useCallback(() => {
+    try {
+      testRef.current.complete();
+      syncState();
+      return true;
+    } catch (error) {
+      console.error("Failed to complete test", error);
+      return false;
     }
   }, [syncState]);
 
@@ -85,6 +97,7 @@ export function useRegularityTestState(sessionId: string | null) {
     beginTapping,
     recordTap,
     analyzeResults,
+    complete,
     reset,
   };
 }

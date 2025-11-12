@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActiveTest } from "@/src/domain/stp-tests/ActiveTest";
+import { ActiveTest } from "@stp-tests/ActiveTest";
 import { ExposureBasedPhase } from "@/src/domain/stp-tests/ExposureBasedTest";
 
 export function useActiveTestState(sessionId: string | null) {

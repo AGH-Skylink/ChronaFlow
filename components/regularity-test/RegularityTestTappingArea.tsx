@@ -1,8 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { TestStyles } from "@/constants/TestStyles";
-
-const TAP_COUNT = 25;
+import { TAP_COUNT } from "@stp-tests/RegularityTest";
 
 interface RegularityTestTappingAreaProps {
   tapCount: number;

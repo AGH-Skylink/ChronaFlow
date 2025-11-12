@@ -32,6 +32,7 @@ function ActiveTestContent({ onComplete }: { onComplete?: () => void }) {
     isCountdownActive,
     handleStart,
     handleCountdownComplete,
+    handlePressIn,
     handlePressOut,
     handleNextTest,
   } = useActiveTestHandlers({ onComplete });
@@ -55,7 +56,7 @@ function ActiveTestContent({ onComplete }: { onComplete?: () => void }) {
             <ActiveTestFlow
               isCountdownActive={isCountdownActive}
               onCountdownComplete={handleCountdownComplete}
-              onStartTimer={handleStart}
+              onStartTimer={handlePressIn}
               onEndTimer={handlePressOut}
               onNext={handleNextTest}
               nextButtonLabel={onComplete ? "Next Test" : "Try Again"}

@@ -6,7 +6,7 @@
       "@/*": ["./*"],
       "@domain/*": ["./src/domain/*"],
       "@models/*": ["./src/domain/models/*"],
-      "@features/*": ["src/domain/stp-tests/*"]
+      "@stp-tests/*": ["./src/domain/stp-tests/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]

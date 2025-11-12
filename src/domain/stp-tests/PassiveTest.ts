@@ -1,5 +1,5 @@
 import { ExposureBasedResult } from "@models/ExposureBasedResult";
-import { ExposureBasedTest } from "./ExposureBasedTest";
+import { ExposureBasedTest, ExposureBasedPhase } from "./ExposureBasedTest";
 
 export class PassiveTest extends ExposureBasedTest {
   private _sliderValue: number = 1000;
@@ -24,10 +24,17 @@ export class PassiveTest extends ExposureBasedTest {
     if (this._userExposure === null) {
       this.calculateUserExposure();
     }
-    return ExposureBasedResult.create(
+    const result = ExposureBasedResult.create(
       this._targetExposure,
       this._userExposure!,
       this.sessionId
     );
+    this._state = ExposureBasedPhase.RESULTS;
+    return result;
+  }
+
+  reset(): void {
+    super.reset();
+    this._sliderValue = 1000;
   }
 }

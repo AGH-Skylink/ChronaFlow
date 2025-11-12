@@ -15,9 +15,9 @@ import { RegularityResultsListView } from "@/components/results/RegularityResult
 import { resultCardStyles } from "@/constants/resultStyles";
 import { RegularityResult } from "@/src/domain/models/RegularityResult";
 import { ResultsMenu } from "@/components/ResultsExtraOptionsMenu";
+import { TAP_COUNT } from "@stp-tests/RegularityTest";
 
 const STORAGE_KEY = "regularityTestResults";
-const TAP_COUNT = 25;
 
 const EXPORT_CONFIG = {
   storageKey: STORAGE_KEY,

@@ -66,6 +66,7 @@ export class ExposureBasedTest {
   reset() {
     this._state = ExposureBasedPhase.INACTIVE;
     this._targetExposure = 0;
+    this._userExposure = null;
     this._emoji = this.randomEmoji();
   }
 

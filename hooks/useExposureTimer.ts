@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef } from "react";
 
 interface UseExposureTimerProps {
-  targetExposure: number;
+  getTargetExposure: () => number;
   onComplete: () => void;
   enabled: boolean;
 }
 
 export function useExposureTimer({
-  targetExposure,
+  getTargetExposure,
   onComplete,
   enabled,
 }: UseExposureTimerProps) {
@@ -22,6 +22,7 @@ export function useExposureTimer({
 
   const startTimer = useCallback(() => {
     clearTimer();
+    const targetExposure = getTargetExposure();
     if (enabled && targetExposure > 0) {
       timerRef.current = setTimeout(() => {
         try {
@@ -33,7 +34,7 @@ export function useExposureTimer({
         }
       }, targetExposure);
     }
-  }, [targetExposure, onComplete, enabled, clearTimer]);
+  }, [getTargetExposure, onComplete, enabled, clearTimer]);
 
   useEffect(() => {
     return () => {

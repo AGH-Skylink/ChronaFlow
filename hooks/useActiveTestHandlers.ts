@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { ExposureBasedPhase } from "@/src/domain/stp-tests/ExposureBasedTest";
-import { useActiveTestOperations } from "@/context/ActiveTestContext";
+import { useActiveTestOperations, useActiveTestStateContext } from "@/context/ActiveTestContext";
 import { useExposureTimer } from "./useExposureTimer";
 import { useResultPersistence } from "./useResultPersistence";
 import { ResultsRepository } from "@/src/domain/repositories/ResultsRepository";
@@ -16,6 +16,7 @@ export function useActiveTestHandlers({
   onComplete,
 }: UseActiveTestHandlersProps = {}) {
   const operations = useActiveTestOperations();
+  const stateContext = useActiveTestStateContext();
   const [isCountdownActive, setIsCountdownActive] = useState(false);
   const repository = useMemo(() => {
     const storage = new AsyncStorageAdapter();
@@ -24,9 +25,9 @@ export function useActiveTestHandlers({
   const { saveResult } = useResultPersistence(repository);
 
   const { startTimer: startExposureTimer } = useExposureTimer({
-    targetExposure: 0,
+    getTargetExposure: () => stateContext.targetExposure,
     onComplete: operations.completeExposure,
-    enabled: false,
+    enabled: true,
   });
 
   const handleStart = useCallback(() => {
@@ -45,6 +46,10 @@ export function useActiveTestHandlers({
     }
     return false;
   }, [operations, startExposureTimer]);
+
+  const handlePressIn = useCallback(() => {
+    operations.startTimer();
+  }, [operations]);
 
   const handlePressOut = useCallback(async () => {
     const result = operations.endTimer();
@@ -66,6 +71,7 @@ export function useActiveTestHandlers({
     isCountdownActive,
     handleStart,
     handleCountdownComplete,
+    handlePressIn,
     handlePressOut,
     handleNextTest,
   };

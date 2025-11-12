@@ -16,6 +16,7 @@ export function useRegularityTestHandlers({
 }: UseRegularityTestHandlersProps = {}) {
   const operations = useRegularityTestOperations();
   const [isCountdownActive, setIsCountdownActive] = useState(false);
+  const [cachedResult, setCachedResult] = useState<RegularityResult | null>(null);
   const repository = useMemo(() => {
     const storage = new AsyncStorageAdapter();
     return new RegularityResultsRepository(STORAGE_KEY, storage);
@@ -25,6 +26,7 @@ export function useRegularityTestHandlers({
   const handleStart = useCallback(() => {
     if (operations.startTest()) {
       setIsCountdownActive(true);
+      setCachedResult(null);
       return true;
     }
     return false;
@@ -39,21 +41,27 @@ export function useRegularityTestHandlers({
   }, [operations]);
 
   const handleTap = useCallback(() => {
-    operations.recordTap();
+    const wasComplete = operations.recordTap();
+    if (wasComplete) {
+      const result = operations.analyzeResults();
+      setCachedResult(result);
+    }
   }, [operations]);
 
   const handleAnalyzeAndNext = useCallback(async () => {
-    const result = operations.analyzeResults();
+    const result = cachedResult || operations.analyzeResults();
     if (result) {
       await saveResult(result);
+      operations.complete();
+      operations.reset();
+      setCachedResult(null);
       if (onComplete) {
-        operations.reset();
         onComplete();
       }
       return true;
     }
     return false;
-  }, [operations, saveResult, onComplete]);
+  }, [operations, saveResult, onComplete, cachedResult]);
 
   return {
     isCountdownActive,

@@ -8,7 +8,7 @@ export enum RegularityPhase {
   COMPLETED = 4,
 }
 
-const TAP_COUNT = 25;
+export const TAP_COUNT = 3;
 
 export class RegularityTest {
   private _state: RegularityPhase = RegularityPhase.INACTIVE;
@@ -66,7 +66,7 @@ export class RegularityTest {
   }
 
   analyzeResults(): RegularityResult {
-    this.ensureState([RegularityPhase.RESULTS]);
+    this.ensureState([RegularityPhase.RESULTS, RegularityPhase.COMPLETED]);
 
     if (this._tapTimestamps.length < 2) {
       throw new Error("Not enough taps to analyze results");
@@ -78,10 +78,11 @@ export class RegularityTest {
     }
 
     const sum = intervals.reduce((prev, curr) => prev + curr, 0);
-    this._avgInterval = sum / intervals.length / 1000;
+    const avgIntervalMs = sum / intervals.length;
+    this._avgInterval = avgIntervalMs / 1000;
 
     const squaredDiffs = intervals.map((interval) => {
-      const diff = interval - this._avgInterval * 1000;
+      const diff = interval - avgIntervalMs;
       return diff * diff;
     });
     const squaredDiffSum = squaredDiffs.reduce((prev, curr) => prev + curr, 0);
