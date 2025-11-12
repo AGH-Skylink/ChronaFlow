@@ -1,9 +1,6 @@
 export { ExportService } from "./ExportService";
 export { IResultExporter } from "./export/IResultExporter";
-export { IFileSharer } from "./export/IFileSharer";
 export { ActiveResultExporter } from "./export/ActiveResultExporter";
 export { PassiveResultExporter } from "./export/PassiveResultExporter";
 export { RegularityResultExporter } from "./export/RegularityResultExporter";
 export { SessionExporter } from "./export/SessionExporter";
-export { WebFileSharer } from "./export/WebFileSharer";
-export { MobileFileSharer } from "./export/MobileFileSharer";

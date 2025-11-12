@@ -12,13 +12,13 @@ export class MobileFileSharer implements IFileSharer {
   ): Promise<Result<void, SharingUnavailableError | ExportFailedError>> {
     try {
       const wbout = XLSX.write(workbook, {
-        type: "base64" as const,
+        type: "buffer" as const,
         bookType: "xlsx" as const,
       });
 
-      const filePath = `${FileSystem.Paths.document}${fileName}`;
+      const filePath = `${FileSystem.Paths.cache.uri}${fileName}`;
       const file = new FileSystem.File(filePath);
-      await file.write(wbout);
+      file.write(new Uint8Array(wbout as ArrayBuffer));
 
       const isSharingAvailable = await Sharing.isAvailableAsync();
       if (isSharingAvailable) {

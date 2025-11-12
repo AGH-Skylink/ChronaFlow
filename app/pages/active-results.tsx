@@ -2,7 +2,11 @@ import React, { useLayoutEffect } from "react";
 import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter, useNavigation } from "expo-router";
-import { ResultsProvider, useResultsState } from "@/context/ResultsContext";
+import {
+  ResultsProvider,
+  useResultsState,
+  useResultsOperations,
+} from "@/context/ResultsContext";
 import {
   LoadingState,
   EmptyState,
@@ -10,7 +14,7 @@ import {
 import { ExposureBasedResultsListView } from "@/components/results/ExposureBasedResultsListView";
 import { resultCardStyles } from "@/constants/resultStyles";
 import { ExposureBasedResult } from "@/src/domain/models/ExposureBasedResult";
-import { ExposureBasedResultsMenu } from "@/components/ResultsExtraOptionsMenu";
+import { ResultsMenu } from "@/components/ResultsExtraOptionsMenu";
 
 const STORAGE_KEY = "activeTestResults";
 const EXPORT_CONFIG = {
@@ -32,12 +36,18 @@ function ActiveResultsContent() {
   const router = useRouter();
   const navigation = useNavigation();
   const { results, loading } = useResultsState();
+  const operations = useResultsOperations();
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () => <ExposureBasedResultsMenu />,
+      headerRight: () => (
+        <ResultsMenu
+          onExport={operations.exportResults}
+          onClearAll={operations.clearAll}
+        />
+      ),
     });
-  }, [navigation]);
+  }, [navigation, operations]);
 
   return (
     <View style={resultCardStyles.container}>
@@ -46,8 +56,8 @@ function ActiveResultsContent() {
       ) : results.length === 0 ? (
         <EmptyState
           testName="active test"
-          routePath="/(tabs)/active-test"
-          onTakeTest={() => router.push("./pages/active-test-page")}
+          routePath="/pages/active-test-page"
+          onTakeTest={() => router.push("/pages/active-test-page")}
         />
       ) : (
         <ExposureBasedResultsListView results={results} />

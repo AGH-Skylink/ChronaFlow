@@ -76,19 +76,19 @@ function RootLayoutNav() {
           }}
         />
         <Stack.Screen
-          name="pages/regularity-test"
+          name="pages/regularity-test-page"
           options={{
             headerShown: false,
           }}
         />
         <Stack.Screen
-          name="pages/active-test"
+          name="pages/active-test-page"
           options={{
             headerShown: false,
           }}
         />
         <Stack.Screen
-          name="pages/passive-test"
+          name="pages/passive-test-page"
           options={{
             headerShown: false,
           }}

@@ -1,4 +1,6 @@
 import { IKeyValueStore } from "@/src/application/ports/IKeyValueStore";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 
 export interface IResult {
   id: string;
@@ -99,12 +101,59 @@ export abstract class BaseResultsRepository<T extends IResult> {
     }
   }
 
-  async exportToCsv(config: ExportConfigBase<T>): Promise<string> {
-    const results = await this.loadAll();
-    let csvContent = config.csvHeader;
-    results.forEach((result) => {
-      csvContent += config.formatRow(result);
-    });
-    return csvContent;
+
+  async generateCsv(config: ExportConfigBase<T>): Promise<string> {
+    try {
+      const results = await this.loadAll();
+      
+      if (results.length === 0) {
+        throw new Error("No results to export");
+      }
+
+      let csvContent = config.csvHeader;
+      results.forEach((result) => {
+        csvContent += config.formatRow(result);
+      });
+
+      return csvContent;
+    } catch (error) {
+      console.error("Error generating CSV:", error);
+      throw error;
+    }
+  }
+
+  async exportToCsv(config: ExportConfigBase<T>): Promise<void> {
+    try {
+      console.log("Starting CSV export...");
+      const csvContent = await this.generateCsv(config);
+      console.log("CSV content generated, length:", csvContent.length);
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const fileName = `${config.fileNamePrefix}_${timestamp}.csv`;
+      
+      const file = new FileSystem.File(FileSystem.Paths.document.uri, fileName);
+      console.log("Will save to:", file.uri);
+
+      await file.write(csvContent);
+      console.log("File written successfully");
+
+      const isSharingAvailable = await Sharing.isAvailableAsync();
+      console.log("Sharing available:", isSharingAvailable);
+      
+      if (isSharingAvailable) {
+        await Sharing.shareAsync(file.uri, {
+          mimeType: "text/csv",
+          dialogTitle: config.dialogTitle,
+          UTI: "public.comma-separated-values-text",
+        });
+        console.log("Sharing completed");
+      } else {
+        console.log("File saved to:", file.uri);
+        console.log("Sharing not available on this platform");
+      }
+    } catch (error) {
+      console.error("Error exporting to CSV:", error);
+      throw error;
+    }
   }
 }

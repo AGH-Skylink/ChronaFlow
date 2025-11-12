@@ -50,10 +50,18 @@ export function ExtraOptionsMenu({
   };
 
   const handleExportPress = async () => {
+    toggleMenu();
     try {
       await onExport();
     } catch (error) {
-      console.error("Error exporting results:", error);
+      if (Platform.OS === "web") {
+        alert("Failed to export results. Please try again.");
+      } else {
+        Alert.alert(
+          "Export Failed",
+          "Unable to export results. Please try again."
+        );
+      }
     }
   };
 

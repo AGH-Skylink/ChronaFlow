@@ -5,6 +5,7 @@ import { useRouter, useNavigation } from "expo-router";
 import {
   RegularityResultsProvider,
   useRegularityResultsState,
+  useRegularityResultsOperations,
 } from "@/context/RegularityResultsContext";
 import {
   LoadingState,
@@ -13,7 +14,7 @@ import {
 import { RegularityResultsListView } from "@/components/results/RegularityResultsListView";
 import { resultCardStyles } from "@/constants/resultStyles";
 import { RegularityResult } from "@/src/domain/models/RegularityResult";
-import { RegularityResultsMenu } from "@/components/ResultsExtraOptionsMenu";
+import { ResultsMenu } from "@/components/ResultsExtraOptionsMenu";
 
 const STORAGE_KEY = "regularityTestResults";
 const TAP_COUNT = 25;
@@ -46,12 +47,18 @@ function RegularityResultsContent() {
   const router = useRouter();
   const navigation = useNavigation();
   const { results, loading } = useRegularityResultsState();
+  const operations = useRegularityResultsOperations();
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () => <RegularityResultsMenu />,
+      headerRight: () => (
+        <ResultsMenu
+          onExport={operations.exportResults}
+          onClearAll={operations.clearAll}
+        />
+      ),
     });
-  }, [navigation]);
+  }, [navigation, operations]);
 
   return (
     <View style={resultCardStyles.container}>
@@ -61,7 +68,7 @@ function RegularityResultsContent() {
         <EmptyState
           testName="regularity test"
           routePath="/regularity-test"
-          onTakeTest={() => router.push("./pages/regularity-test-page")}
+          onTakeTest={() => router.push("/pages/regularity-test-page")}
         />
       ) : (
         <RegularityResultsListView results={results} />
