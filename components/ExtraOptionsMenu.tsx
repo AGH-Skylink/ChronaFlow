@@ -6,52 +6,22 @@ import {
   StyleSheet,
   Animated,
   Modal,
-  TouchableWithoutFeedback,
   Pressable,
+  Alert,
+  Platform,
 } from "react-native";
 import { useColorScheme } from "./useColorScheme";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import {
-  exportActiveResults,
-  clearActiveResults,
-} from "@/app/pages/active-results";
-import {
-  exportRegularityResults,
-  clearRegularityResults,
-} from "@/app/pages/regularity-results";
-import {
-  exportPassiveResults,
-  clearPassiveResults,
-} from "@/app/pages/passive-results";
-import { usePathname } from "expo-router";
 
-function getExportFunction(pathname: string | undefined) {
-  if (pathname?.includes("active-results")) {
-    return exportActiveResults;
-  }
-  if (pathname?.includes("passive-results")) {
-    return exportPassiveResults;
-  }
-  if (pathname?.includes("regularity-results")) {
-    return exportRegularityResults;
-  }
-  return null;
+interface ExtraOptionsMenuProps {
+  onExport: () => Promise<void>;
+  onClearAll: () => Promise<void>;
 }
 
-function getClearFunction(pathname: string | undefined) {
-  if (pathname?.includes("active-results")) {
-    return clearActiveResults;
-  }
-  if (pathname?.includes("passive-results")) {
-    return clearPassiveResults;
-  }
-  if (pathname?.includes("regularity-results")) {
-    return clearRegularityResults;
-  }
-  return null;
-}
-
-export function ExtraOptionsMenu() {
+export function ExtraOptionsMenu({
+  onExport,
+  onClearAll,
+}: ExtraOptionsMenuProps) {
   const colorScheme = useColorScheme();
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [buttonLayout, setButtonLayout] = useState({
@@ -61,7 +31,6 @@ export function ExtraOptionsMenu() {
     height: 0,
   });
   const scaleAnim = useRef(new Animated.Value(0)).current;
-  const pathname = usePathname();
 
   const toggleMenu = () => {
     if (isMenuVisible) {
@@ -80,18 +49,47 @@ export function ExtraOptionsMenu() {
     }
   };
 
-  const handleExportPress = () => {
-    const exportFunction = getExportFunction(pathname);
-    if (exportFunction) {
-      exportFunction();
+  const handleExportPress = async () => {
+    toggleMenu();
+    try {
+      await onExport();
+    } catch (error) {
+      if (Platform.OS === "web") {
+        alert("Failed to export results. Please try again.");
+      } else {
+        Alert.alert(
+          "Export Failed",
+          "Unable to export results. Please try again."
+        );
+      }
     }
   };
 
   const handleClearPress = () => {
     toggleMenu();
-    const clearFunction = getClearFunction(pathname);
-    if (clearFunction) {
-      clearFunction();
+
+    const clearAction = async () => {
+      try {
+        await onClearAll();
+      } catch (error) {
+        console.error("Error clearing results:", error);
+      }
+    };
+
+    // Show confirmation dialog
+    if (Platform.OS === "web") {
+      if (confirm("Are you sure you want to clear all results?")) {
+        clearAction();
+      }
+    } else {
+      Alert.alert(
+        "Clear All Results",
+        "Are you sure you want to clear all results? This action cannot be undone.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Clear", style: "destructive", onPress: clearAction },
+        ]
+      );
     }
   };
 
@@ -128,7 +126,7 @@ export function ExtraOptionsMenu() {
                   transform: [{ scale: scaleAnim }],
                   opacity: scaleAnim,
                   top: buttonLayout.y + buttonLayout.height + 5,
-                  right: 20, // Adjust based on your layout
+                  right: 20,
                 },
               ]}
             >

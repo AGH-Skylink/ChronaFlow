@@ -1,141 +1,53 @@
-import React, { useState, useEffect } from "react";
-import { ScrollView, View, Text, Alert } from "react-native";
+import React, { useLayoutEffect } from "react";
+import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
-import { EventRegister } from "react-native-event-listeners";
+import { useRouter, useNavigation } from "expo-router";
 import {
-  exportResults,
-  clearAllResults,
-  formatDate,
-  deleteResult,
-} from "../../utils/results-utls";
+  ResultsProvider,
+  useResultsState,
+  useResultsOperations,
+} from "@/context/ResultsContext";
 import {
   LoadingState,
   EmptyState,
-  DeleteButton,
-  ResultRow,
 } from "../../components/TestResultComponents";
-import { NotesEditor } from "@/components/NotesEditor";
+import { ExposureBasedResultsListView } from "@/components/results/ExposureBasedResultsListView";
 import { resultCardStyles } from "@/constants/resultStyles";
+import { ExposureBasedResult } from "@/src/domain/models/ExposureBasedResult";
+import { ResultsMenu } from "@/components/ResultsExtraOptionsMenu";
 
-interface TestResult {
-  id: string;
-  timestamp: number;
-  targetExposure: number;
-  userInput: number;
-  notes?: string;
-  sessionId?: string | null;
-}
-
-// Storage key and event name constants
 const STORAGE_KEY = "passiveTestResults";
-const RESULTS_CLEARED_EVENT = "passiveResultsCleared";
-
-export const exportPassiveResults = async () => {
-  await exportResults({
-    storageKey: STORAGE_KEY,
-    csvHeader:
-      "Day,Time,Session Id,Target Duration (ms),Your Duration (ms),Notes\n",
-    formatRow: (result: TestResult) => {
-      const date = new Date(result.timestamp).toLocaleString();
-      const [day, time] = date.split(", ");
-      return `"${day}","${time}",${result.sessionId || ""},${
-        result.targetExposure
-      },${result.userInput},"${result.notes || ""}, 
-      "\n`;
-    },
-    fileNamePrefix: "passive_test_results",
-    dialogTitle: "Save Passive Test Results",
-    eventName: RESULTS_CLEARED_EVENT,
-  });
+const EXPORT_CONFIG = {
+  storageKey: STORAGE_KEY,
+  csvHeader:
+    "Day,Time,Session Id,Target Duration (ms),Your Duration (ms),Notes\n",
+  formatRow: (result: ExposureBasedResult) => {
+    const date = new Date(result.timestamp).toLocaleString();
+    const [day, time] = date.split(", ");
+    return `"${day}","${time}",${result.sessionId || ""},${
+      result.targetDuration
+    },${result.userDuration},"${result.notes || ""}"\n`;
+  },
+  fileNamePrefix: "passive_test_results",
+  dialogTitle: "Save Passive Test Results",
 };
 
-export const clearPassiveResults = () => {
-  clearAllResults(STORAGE_KEY, RESULTS_CLEARED_EVENT);
-};
-
-export default function PassiveResultsScreen() {
+function PassiveResultsContent() {
   const router = useRouter();
-  const [results, setResults] = useState<TestResult[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const navigation = useNavigation();
+  const { results, loading } = useResultsState();
+  const operations = useResultsOperations();
 
-  useEffect(() => {
-    loadResults();
-
-    const listener = EventRegister.addEventListener(
-      RESULTS_CLEARED_EVENT,
-      () => {
-        setResults([]);
-      }
-    );
-
-    return () => {
-      EventRegister.removeEventListener(listener as string);
-    };
-  }, []);
-
-  const loadResults = async () => {
-    try {
-      setLoading(true);
-      const resultsJson = await AsyncStorage.getItem(STORAGE_KEY);
-
-      if (resultsJson) {
-        const parsedResults = JSON.parse(resultsJson);
-        // Sort results by timestamp (newest first)
-        const sortedResults = parsedResults.sort(
-          (a: TestResult, b: TestResult) => b.timestamp - a.timestamp
-        );
-        setResults(sortedResults);
-      }
-    } catch (error) {
-      console.error("Error loading results:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteResult = (idToDelete: string) => {
-    deleteResult(STORAGE_KEY, idToDelete, "id", (updatedResults) => {
-      setResults(updatedResults);
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <ResultsMenu
+          onExport={operations.exportResults}
+          onClearAll={operations.clearAll}
+        />
+      ),
     });
-  };
-
-  const startEditingNote = (id: string) => {
-    setEditingNoteId(id);
-  };
-
-  const saveNote = async (id: string, noteText: string) => {
-    try {
-      const resultsJson = await AsyncStorage.getItem(STORAGE_KEY);
-      if (resultsJson) {
-        const parsedResults = JSON.parse(resultsJson);
-        const updatedResults = parsedResults.map((result: TestResult) =>
-          result.id === id ? { ...result, notes: noteText } : result
-        );
-
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedResults));
-
-        // Update local state
-        setResults(
-          results.map((result) =>
-            result.id === id ? { ...result, notes: noteText } : result
-          )
-        );
-
-        setEditingNoteId(null);
-        console.log("Note saved successfully");
-      }
-    } catch (error) {
-      console.error("Error saving note:", error);
-      Alert.alert("Error", "Failed to save note. Please try again.");
-    }
-  };
-
-  const cancelEditingNote = () => {
-    setEditingNoteId(null);
-  };
+  }, [navigation, operations]);
 
   return (
     <View style={resultCardStyles.container}>
@@ -144,55 +56,21 @@ export default function PassiveResultsScreen() {
       ) : results.length === 0 ? (
         <EmptyState
           testName="passive test"
-          routePath="/(tabs)/passive-test"
-          onTakeTest={() => router.push("/pages/passive-test")}
+          routePath="/pages/passive-test-page"
+          onTakeTest={() => router.push("/pages/passive-test-page")}
         />
       ) : (
-        <ScrollView
-          style={resultCardStyles.scrollView}
-          contentContainerStyle={resultCardStyles.scrollViewContent}
-        >
-          {results.map((result, index) => (
-            <View key={index} style={resultCardStyles.resultCard}>
-              <View style={resultCardStyles.resultHeader}>
-                <View style={resultCardStyles.dateEmojiContainer}>
-                  <Text style={resultCardStyles.resultDate}>
-                    {formatDate(result.timestamp)}
-                  </Text>
-                </View>
-              </View>
-
-              <ResultRow
-                label="Target duration:"
-                value={`${result.targetExposure} ms`}
-              />
-
-              <ResultRow
-                label="Your duration:"
-                value={`${result.userInput} ms`}
-              />
-
-              <ResultRow
-                label="Difference:"
-                value={`${Math.abs(
-                  result.userInput - result.targetExposure
-                )} ms`}
-              />
-
-              <NotesEditor
-                notes={result.notes}
-                isEditing={editingNoteId === result.id}
-                onEditStart={() => startEditingNote(result.id)}
-                onSave={(noteText) => saveNote(result.id, noteText)}
-                onCancel={cancelEditingNote}
-              />
-
-              <DeleteButton handlePress={() => handleDeleteResult(result.id)} />
-            </View>
-          ))}
-        </ScrollView>
+        <ExposureBasedResultsListView results={results} />
       )}
       <StatusBar style="light" />
     </View>
+  );
+}
+
+export default function PassiveResultsScreen() {
+  return (
+    <ResultsProvider storageKey={STORAGE_KEY} exportConfig={EXPORT_CONFIG}>
+      <PassiveResultsContent />
+    </ResultsProvider>
   );
 }

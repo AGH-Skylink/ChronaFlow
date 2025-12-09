@@ -11,7 +11,6 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/components/useColorScheme";
-import { ExtraOptionsMenu } from "@/components/ExtraOptionsMenu";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -62,37 +61,34 @@ function RootLayoutNav() {
           name="pages/regularity-results"
           options={{
             headerTitle: "Regularity Test Results",
-            headerRight: () => <ExtraOptionsMenu />,
           }}
         />
         <Stack.Screen
           name="pages/active-results"
           options={{
             headerTitle: "Active Test Results",
-            headerRight: () => <ExtraOptionsMenu />,
           }}
         />
         <Stack.Screen
           name="pages/passive-results"
           options={{
             headerTitle: "Passive Test Results",
-            headerRight: () => <ExtraOptionsMenu />,
           }}
         />
         <Stack.Screen
-          name="pages/regularity-test"
+          name="pages/regularity-test-page"
           options={{
             headerShown: false,
           }}
         />
         <Stack.Screen
-          name="pages/active-test"
+          name="pages/active-test-page"
           options={{
             headerShown: false,
           }}
         />
         <Stack.Screen
-          name="pages/passive-test"
+          name="pages/passive-test-page"
           options={{
             headerShown: false,
           }}
