@@ -1,38 +1,38 @@
 # ChronaFlow
 
-## Cognitive Assessment for Subjective Time Perception
+## App for measuring Subjective Time Perception
 
-ChronaFlow is a mobile application that provides a suite of cognitive assessment tools designed to measure Subjective Time Perception (STP). The app enables users to perform simple tests that measure different aspects of time perception and provides immediate feedback on performance.
+ChronaFlow is a simple web/mobile app for running short tests that measure how people feel and estimate time. You take quick tasks, get immediate feedback, and can track how your perception changes over time.
 
 ## Features
 
-- **Multiple Test Types**: Three different cognitive tests to assess various aspects of time perception
-- **Results History**: View and analyze your performance history for each test
-- **Data Export**: Export your test results as CSV files for further analysis
-- **Note Taking**: Add notes to test results for tracking contextual information
+* Three test types targeting different aspects of subjective time perception
+* History view for checking past scores
+* CSV export for digging into your data
+* Optional notes for adding context to specific test runs
 
 ## Available Tests
 
 ### Regularity Test
 
-Test your ability to maintain a regular rhythm by tapping at consistent 1-second intervals. This measures your internal clock's stability.
+You tap every second, trying to stay as close as possible to a stable rhythm. Good for checking the consistency of your internal clock.
 
 ### Passive Test
 
-A visual exposure test where you observe an object for a random duration, then estimate how long it was displayed using a slider.
+You watch an object for a random amount of time, then guess how long it was shown using a slider.
 
 ### Active Test
 
-View an object for a random duration, then actively reproduce that same duration by holding down a button, testing your time perception accuracy.
+You see an object for a random duration, then try to recreate that duration by holding a button.
 
 ## Installation
 
 ### Prerequisites
 
-- Node.js (18.0 or later)
-- Yarn or npm package manager
+* Node.js 18+
+* Yarn or npm
 
-### Setup Instructions
+### Setup
 
 1. Clone the repository:
 
@@ -47,33 +47,19 @@ View an object for a random duration, then actively reproduce that same duration
    yarn install
    ```
 
-3. Start the application:
+3. Start the app:
 
    ```sh
    npx expo start
    ```
 
-4. Open on your device:
-   - Scan the QR code with Expo Go app (Android) or Camera app (iOS)
-   - Alternatively, you can access it on your local network at the port `:8081`
+4. Open it on your device:
 
-## Project Structure
-
-```tree
-AATC_APP/
-├── app/                   # Main application screens
-│   ├── (tabs)/            # Tab screens (tests and home)
-│   └── pages/             # Result pages
-├── assets/                # Images and fonts
-├── components/            # Reusable UI components
-├── constants/             # Styles, colors, and other constants
-└── utils/                 # Helper functions for tests and storage
-```
+   * Scan the QR code via Expo Go (Android) or Camera (iOS)
+   * Or open it on your local network at port `8081`
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
-
----
+Licensed under MIT — see the LICENSE file.
 
 © 2025 AGH Skylink. All rights reserved.
