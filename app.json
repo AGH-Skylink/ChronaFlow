@@ -2,7 +2,7 @@
   "expo": {
     "name": "ChronaFlow",
     "slug": "ChronaFlow",
-    "version": "0.2.1",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/chronaflow.png",
     "scheme": "myapp",
