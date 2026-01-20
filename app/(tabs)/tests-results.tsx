@@ -20,7 +20,6 @@ import { WebFileSharer } from "@/src/infrastructure/export/WebFileSharer";
 import { MobileFileSharer } from "@/src/infrastructure/export/MobileFileSharer";
 import {
   NoResultsError,
-  SharingUnavailableError,
 } from "@/src/application/errors/ExportErrors";
 import { SPACING, RADIUS, buttons } from "@/constants/Styles";
 import { ResponsiveScaffold } from "@/components/layout/ResponsiveScaffold";
@@ -52,6 +51,26 @@ export default function TestsResultsScreen() {
     );
   }
 
+  const handleAllAction = async (mode: "save") => {
+    if (!exportService.current) {
+      return;
+    }
+
+    const result = await exportService.current.exportAllResults(mode);
+    if (result.success) {
+      const actionLabel = mode === "share" ? "shared" : "saved";
+      Alert.alert("Success", `Results ${actionLabel} successfully!`);
+      return;
+    }
+
+    if (result.error instanceof NoResultsError) {
+      Alert.alert("No Results", result.error.message);
+      return;
+    }
+
+    Alert.alert("Error", result.error.message);
+  };
+
   return (
     <ResponsiveScaffold
       scrollable
@@ -76,29 +95,14 @@ export default function TestsResultsScreen() {
         ]}
       >
         <TouchableOpacity
-          style={[buttons.primary, styles.exportButton]}
+          style={[buttons.secondary, styles.actionButton]}
           activeOpacity={0.9}
-          onPress={async () => {
-            if (!exportService.current) return;
-
-            const result = await exportService.current.exportAllResults();
-            if (result.success) {
-              Alert.alert("Success", "Results exported successfully!");
-            } else {
-              if (result.error instanceof NoResultsError) {
-                Alert.alert("No Results", result.error.message);
-              } else if (result.error instanceof SharingUnavailableError) {
-                Alert.alert("Export Complete", result.error.message);
-              } else {
-                Alert.alert("Error", result.error.message);
-              }
-            }
-          }}
+          onPress={() => handleAllAction("save")}
         >
-          <RNView style={styles.exportButtonContent}>
-            <Ionicons name="cloud-download-outline" size={16} color="#fff" />
-            <Text style={[buttons.buttonText, styles.exportButtonText]}>
-              Export All
+          <RNView style={styles.actionButtonContent}>
+            <Ionicons name="download-outline" size={16} color="#fff" />
+            <Text style={[buttons.buttonText, styles.actionButtonText]}>
+              Save All
             </Text>
           </RNView>
         </TouchableOpacity>
@@ -177,24 +181,27 @@ const styles = StyleSheet.create({
   contentWide: {
     paddingHorizontal: 0,
   },
-  exportButton: {
+  actionButton: {
     flex: 1,
     borderRadius: RADIUS.lg,
-    marginRight: SPACING.sm,
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.sm,
   },
   actionsRow: {
     width: "100%",
+    flexDirection: "column",
+    gap: SPACING.sm,
   },
   actionsRowWide: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
     alignItems: "flex-end",
   },
-  exportButtonContent: {
+  actionButtonContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },
-  exportButtonText: {
+  actionButtonText: {
     marginLeft: SPACING.xs,
   },
   cardsGrid: {

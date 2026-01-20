@@ -1,14 +1,15 @@
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
-import * as XLSX from "xlsx";
-import { IFileSharer } from "@/src/application/ports/IFileSharer";
+import * as XLSX from "xlsx-js-style";
+import { FileShareMode, IFileSharer } from "@/src/application/ports/IFileSharer";
 import { Result, success, failure } from "@/src/domain/types/Result";
 import { SharingUnavailableError, ExportFailedError } from "@/src/application/errors/ExportErrors";
 
 export class MobileFileSharer implements IFileSharer {
   async shareWorkbook(
     workbook: XLSX.WorkBook,
-    fileName: string
+    fileName: string,
+    _mode: FileShareMode = "share"
   ): Promise<Result<void, SharingUnavailableError | ExportFailedError>> {
     try {
       const wbout = XLSX.write(workbook, {

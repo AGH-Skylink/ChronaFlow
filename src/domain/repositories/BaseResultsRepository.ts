@@ -1,4 +1,5 @@
 import { IKeyValueStore } from "@/src/application/ports/IKeyValueStore";
+import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 
@@ -16,6 +17,8 @@ export interface ExportConfigBase<T extends IResult> {
   fileNamePrefix: string;
   dialogTitle: string;
 }
+
+export type ExportMode = "share" | "save";
 export abstract class BaseResultsRepository<T extends IResult> {
   constructor(
     protected storageKey: string,
@@ -122,13 +125,21 @@ export abstract class BaseResultsRepository<T extends IResult> {
     }
   }
 
-  async exportToCsv(config: ExportConfigBase<T>): Promise<void> {
+  async exportToCsv(
+    config: ExportConfigBase<T>,
+    mode: ExportMode = "share"
+  ): Promise<void> {
     try {
       const csvContent = await this.generateCsv(config);
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const fileName = `${config.fileNamePrefix}_${timestamp}.csv`;
-      
+
+      if (Platform.OS === "web") {
+        await exportCsvWeb(csvContent, fileName, config.dialogTitle, mode);
+        return;
+      }
+
       const file = new FileSystem.File(FileSystem.Paths.cache.uri, fileName);
 
       await file.write(csvContent);
@@ -149,4 +160,51 @@ export abstract class BaseResultsRepository<T extends IResult> {
       throw error;
     }
   }
+}
+
+async function exportCsvWeb(
+  csvContent: string,
+  fileName: string,
+  dialogTitle: string,
+  mode: ExportMode
+): Promise<void> {
+  if (typeof window === "undefined") {
+    throw new Error("File export is only available in the browser.");
+  }
+
+  const mimeType = "text/csv;charset=utf-8";
+  const blob = new Blob([csvContent], { type: mimeType });
+
+  if (
+    mode === "share" &&
+    typeof navigator !== "undefined" &&
+    typeof File === "function"
+  ) {
+    const file = new File([blob], fileName, { type: "text/csv" });
+    if (
+      typeof navigator.canShare === "function" &&
+      navigator.canShare({ files: [file] })
+    ) {
+      try {
+        await navigator.share({ files: [file], title: dialogTitle });
+        return;
+      } catch (error) {
+        const name = error instanceof Error ? error.name : "";
+        if (name === "AbortError" || name === "NotAllowedError") {
+          return;
+        }
+      }
+    }
+  }
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  link.target = "_blank";
+  link.rel = "noopener";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 500);
 }
