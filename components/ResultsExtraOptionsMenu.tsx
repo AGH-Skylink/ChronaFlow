@@ -1,10 +1,21 @@
 import React from "react";
 import { ExtraOptionsMenu } from "./ExtraOptionsMenu";
 interface ResultsMenuProps {
-  onExport: () => Promise<void>;
+  onShare: () => Promise<void>;
+  onSave: () => Promise<void>;
   onClearAll: () => Promise<void>;
 }
 
-export function ResultsMenu({ onExport, onClearAll }: ResultsMenuProps) {
-  return <ExtraOptionsMenu onExport={onExport} onClearAll={onClearAll} />;
+export function ResultsMenu({
+  onShare,
+  onSave,
+  onClearAll,
+}: ResultsMenuProps) {
+  return (
+    <ExtraOptionsMenu
+      onShare={onShare}
+      onSave={onSave}
+      onClearAll={onClearAll}
+    />
+  );
 }

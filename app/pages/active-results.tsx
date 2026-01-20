@@ -42,7 +42,8 @@ function ActiveResultsContent() {
     navigation.setOptions({
       headerRight: () => (
         <ResultsMenu
-          onExport={operations.exportResults}
+          onShare={operations.exportResults}
+          onSave={operations.saveResults}
           onClearAll={operations.clearAll}
         />
       ),

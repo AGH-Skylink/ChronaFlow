@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx";
+import * as XLSX from "xlsx-js-style";
 import { ResultsRepository } from "@/src/domain/repositories/ResultsRepository";
 import { RegularityResultsRepository } from "@/src/domain/repositories/RegularityResultsRepository";
 import { SessionRepository } from "@/src/domain/repositories/SessionRepository";
@@ -6,7 +6,7 @@ import { ActiveResultExporter } from "./export/ActiveResultExporter";
 import { PassiveResultExporter } from "./export/PassiveResultExporter";
 import { RegularityResultExporter } from "./export/RegularityResultExporter";
 import { SessionExporter } from "./export/SessionExporter";
-import { IFileSharer } from "@/src/application/ports/IFileSharer";
+import { FileShareMode, IFileSharer } from "@/src/application/ports/IFileSharer";
 import { IResultExporter } from "./export/IResultExporter";
 import { Result, success, failure } from "@/src/domain/types/Result";
 import { NoResultsError, ExportFailedError } from "@/src/application/errors/ExportErrors";
@@ -32,7 +32,9 @@ export class ExportService {
     this.fileSharer = fileSharer;
   }
 
-  async exportAllResults(): Promise<Result<void, NoResultsError | ExportFailedError>> {
+  async exportAllResults(
+    mode: FileShareMode = "share"
+  ): Promise<Result<void, NoResultsError | ExportFailedError>> {
     try {
       const workbook = await this.createWorkbook();
       
@@ -41,7 +43,11 @@ export class ExportService {
       }
 
       const fileName = this.generateFileName();
-      const shareResult = await this.fileSharer.shareWorkbook(workbook, fileName);
+      const shareResult = await this.fileSharer.shareWorkbook(
+        workbook,
+        fileName,
+        mode
+      );
       
       if (!shareResult.success) {
         return failure(new ExportFailedError(shareResult.error));

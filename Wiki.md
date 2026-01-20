@@ -6,13 +6,53 @@ This document provides detailed information about the exported results functiona
 
 ## Table of Contents
 
-1. [General Export Functionality](#general-export-functionality)
-2. [Regularity Test Results](#regularity-test-results)
-3. [Passive Test Results](#passive-test-results)
-4. [Active Test Results](#active-test-results)
-5. [CSV File Format](#csv-file-format)
+1. [How to run offline](#how-to-run-offline)
+2. [General Export Functionality](#general-export-functionality)
+3. [Regularity Test Results](#regularity-test-results)
+4. [Passive Test Results](#passive-test-results)
+5. [Active Test Results](#active-test-results)
+6. [CSV File Format](#csv-file-format)
 
 ---
+
+## How to run offline
+
+ChronaFlow can work without internet after you open it once while you are online.
+
+### Steps (Android)
+
+1. Open `https://chronaflow.netlify.app` in Chrome or Brave.
+2. Wait for the app to fully load.
+3. Tap the browser menu and choose "Add to Home screen".
+4. Open ChronaFlow from the new Home screen icon.
+5. Turn off your internet and confirm the app still opens and runs.
+
+**Screenshot placeholder:** [Android add to Home screen menu]
+
+### Steps (iOS)
+
+1. Open `https://chronaflow.netlify.app` in Safari (this does not work in other iOS browsers).
+2. Wait for the app to fully load.
+3. Tap the Share button.
+
+<img src="assets/images/ss1.png" alt="iOS Share button" width="50%" />
+
+4. Scroll and tap "More".
+
+<img src="assets/images/ss2.png" alt="iOS Share sheet more" width="50%" />
+
+5. Tap "Add to Home Screen".
+
+<img src="assets/images/ss3.png" alt="iOS Add to Home Screen" width="50%" />
+
+6. Open ChronaFlow from the new Home screen icon.
+7. Turn off your internet and confirm the app still opens and runs.
+
+### Notes
+
+- If the app shows a blank screen, connect to the internet once, open it, then try again offline.
+- When a new version is published, open the app online once to update it.
+- If your phone is low on storage, it may remove offline files.
 
 ## 1. General Export Functionality
 

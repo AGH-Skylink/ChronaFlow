@@ -14,12 +14,14 @@ import { useColorScheme } from "./useColorScheme";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 interface ExtraOptionsMenuProps {
-  onExport: () => Promise<void>;
+  onShare: () => Promise<void>;
+  onSave: () => Promise<void>;
   onClearAll: () => Promise<void>;
 }
 
 export function ExtraOptionsMenu({
-  onExport,
+  onShare,
+  onSave,
   onClearAll,
 }: ExtraOptionsMenuProps) {
   const colorScheme = useColorScheme();
@@ -49,19 +51,35 @@ export function ExtraOptionsMenu({
     }
   };
 
-  const handleExportPress = async () => {
+  const showActionError = (title: string, message: string) => {
+    if (Platform.OS === "web") {
+      alert(message);
+    } else {
+      Alert.alert(title, message);
+    }
+  };
+
+  const handleSharePress = async () => {
     toggleMenu();
     try {
-      await onExport();
+      await onShare();
     } catch (error) {
-      if (Platform.OS === "web") {
-        alert("Failed to export results. Please try again.");
-      } else {
-        Alert.alert(
-          "Export Failed",
-          "Unable to export results. Please try again."
-        );
-      }
+      showActionError(
+        "Share Failed",
+        "Unable to share results. Please try again."
+      );
+    }
+  };
+
+  const handleSavePress = async () => {
+    toggleMenu();
+    try {
+      await onSave();
+    } catch (error) {
+      showActionError(
+        "Save Failed",
+        "Unable to save results. Please try again."
+      );
     }
   };
 
@@ -132,15 +150,30 @@ export function ExtraOptionsMenu({
             >
               <TouchableOpacity
                 style={styles.menuItem}
-                onPress={handleExportPress}
+                onPress={handleSharePress}
               >
                 <FontAwesome
-                  name="file"
+                  name="share-alt"
                   size={16}
                   color="#60a5fa"
                   style={styles.menuIcon}
                 />
-                <Text style={styles.menuText}>Export Results</Text>
+                <Text style={styles.menuText}>Share Results</Text>
+              </TouchableOpacity>
+
+              <View style={styles.menuDivider} />
+
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={handleSavePress}
+              >
+                <FontAwesome
+                  name="download"
+                  size={16}
+                  color="#34d399"
+                  style={styles.menuIcon}
+                />
+                <Text style={styles.menuText}>Save Results</Text>
               </TouchableOpacity>
 
               <View style={styles.menuDivider} />

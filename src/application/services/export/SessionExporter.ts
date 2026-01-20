@@ -1,4 +1,4 @@
-import { Session } from "@/src/domain/models/Session";
+import { Session } from "@/src/domain/session/Session";
 import { SessionBlock } from "@/types/session";
 import { IResultExporter } from "./IResultExporter";
 

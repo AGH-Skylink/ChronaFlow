@@ -23,6 +23,7 @@ export interface ResultsOperations {
   saveNote: (id: string, noteText: string) => Promise<void>;
   clearAll: () => Promise<void>;
   exportResults: () => Promise<void>;
+  saveResults: () => Promise<void>;
 }
 
 export interface ResultsContextValue<T extends IResult> {
@@ -107,6 +108,15 @@ export function createResultsContext<T extends IResult>(
       }
     };
 
+    const saveResults = async () => {
+      try {
+        await repository.exportToCsv(exportConfig, "save");
+      } catch (error) {
+        console.error("Error saving results:", error);
+        throw error;
+      }
+    };
+
     const contextValue: ResultsContextValue<T> = {
       state: {
         results,
@@ -118,6 +128,7 @@ export function createResultsContext<T extends IResult>(
         saveNote,
         clearAll,
         exportResults,
+        saveResults,
       },
     };
 
